@@ -1,0 +1,5 @@
+name: comment_limit
+type: module
+description: Limits comments per node type
+core: 8.x
+package: Comment limit

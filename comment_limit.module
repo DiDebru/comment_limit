@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * Contains comment_limit.module..
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function comment_limit_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the comment_limit module.
+    case 'help.page.comment_limit':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Limits comments per node type') . '</p>';
+      return $output;
+
+    default:
+  }
+
+  function comment_limit_form_field_config_edit_form(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    $form['field-config-edit-form'] = [
+      '#type' => 'textfield',
+      '#title' => 'Comment limit per user',
+      '#weight' => -10,
+    ];
+  }
+
+}
+

@@ -1,0 +1,14 @@
+{
+  "name": "drupal/comment_limit",
+  "type": "drupal-module",
+  "description": "Limits comments per node type",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/comment_limit",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/comment_limit",
+    "source": "http://cgit.drupalcode.org/comment_limit"
+  },
+  "require": { }
+}
