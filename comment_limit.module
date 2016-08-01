@@ -22,8 +22,11 @@ function comment_limit_help($route_name, RouteMatchInterface $route_match) {
     default:
   }
 
-  function comment_limit_form_field_config_edit_form(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-    $form['field-config-edit-form'] = [
+  /**
+   * Implements hook_form_FORM_ID_alter().
+   */
+  function comment_limit_form_field_config_edit_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    $form['options'] = [
       '#type' => 'textfield',
       '#title' => 'Comment limit per user',
       '#weight' => -10,
