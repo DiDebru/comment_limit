@@ -5,7 +5,11 @@
  * Contains comment_limit.module..
  */
 
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormState;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\Entity\Node;
 
 /**
  * Implements hook_help().
@@ -21,17 +25,48 @@ function comment_limit_help($route_name, RouteMatchInterface $route_match) {
 
     default:
   }
+}
 
-  /**
-   * Implements hook_form_FORM_ID_alter().
-   */
-  function comment_limit_form_field_config_edit_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-    $form['options'] = [
-      '#type' => 'textfield',
-      '#title' => 'Comment limit per user',
-      '#weight' => -10,
-    ];
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function comment_limit_form_field_config_edit_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  $form['edit-limit-per-user'] = [
+    '#type' => 'number',
+    '#title' => 'Comment limit per user',
+    '#weight' => 1,
+    '#default-value' => $form_state->getValue('edit-limit-per-user'),
+  ];
+  $form['#validate'][] = 'comment_limit_field_config_edit_form_validate';
+}
+
+/**
+ * Implements hook_FORM_ID_validate().
+ */
+function comment_limit_field_config_edit_form_validate(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  If (is_numeric($form_state->getValue('edit-limit-per-user')) && $form_state->getValue('edit-limit-per-user') < 0 && !empty($form_state->getValue('edit-limit-per-user'))) {
+    $form_state->setErrorByName('edit-limit-per-user', t('The value of comment limit per user has to be 0 or higher'));
+  }
+}
+
+/**
+ * Implements hook_comment_insert
+ */
+function comment_limit_comment_insert(EntityInterface $entity) {
+  $user = \Drupal::currentUser();
+
+  if ($user->hasPermission('bypass comment limit') || !$user->hasPermission('post comments')) {
+      return;
   }
 
 }
+
+/**
+ * Get comment limit for this node type
+ */
+function comment_limit_get($node_type) {
+  return variable_get('comment_limit_' . $node_type, 0);
+}
+
+
 
