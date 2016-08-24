@@ -77,7 +77,7 @@ function comment_limit_comment_insert(Comment $comment) {
   $currentCommentUser = comment_limit_get_user($entity_id);
   // Node related variables
   $maxCommentNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE) + 1;
-  $limitNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
+  $limitNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE);
   $currentCommentNode = comment_limit_get_node($entity_id);
 
   if ($maxCommentNode) {
