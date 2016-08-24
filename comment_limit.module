@@ -41,6 +41,14 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
     '#max' => '1000',
     '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE),
   ];
+  $form['edit-limit-per-node'] = [
+    '#type' => 'number',
+    '#title' => 'Comment limit per node',
+    '#weight' => 1,
+    '#min' => '0',
+    '#max' => '10000',
+    '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE),
+  ];
   $form['#entity_builders'][] = 'comment_limit_form_field_edit_form_add_form_builder';
 }
 
@@ -49,33 +57,48 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
  */
 function comment_limit_form_field_edit_form_add_form_builder($entity_type, FieldConfig $comment, &$form, FormStateInterface $form_state) {
   $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-user', $form_state->getValue('edit-limit-per-user'));
+  $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-node', $form_state->getValue('edit-limit-per-node'));
 }
 
 /**
  * Implements hook_comment_insert().
  */
 function comment_limit_comment_insert(Comment $comment) {
-  $user = Drupal::currentUser();
+  // General variables.
   $entity_type = $comment->getCommentedEntityTypeId();
   $entity_id = $comment->getCommentedEntityId();
   $node = Node::load($comment->getCommentedEntityId());
   $bundle = $node->getType();
   $comment_type = FieldConfig::load($entity_type . '.' . $bundle . '.comment');
-  $maxCommment = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE) + 1;
-  $limit = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
-  $currentComment = comment_limit_get($entity_id);
-  if ($maxCommment) {
-    if ($maxCommment <= $currentComment && !$user->hasPermission('bypass comment limit')) {
+  // User related variables.
+  $user = Drupal::currentUser();
+  $maxCommmentUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE) + 1;
+  $limitUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
+  $currentCommentUser = comment_limit_get_user($entity_id);
+  // Node related variables
+  $maxCommentNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE) + 1;
+  $limitNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
+  $currentCommentNode = comment_limit_get_node($entity_id);
+
+  if ($maxCommentNode) {
+    if ($maxCommentNode <= $currentCommentNode && !$user->hasPermission('bypass comment limit')) {
       $comment->delete();
-      drupal_set_message(t('You have commented @maxcomment times, please edit or delete some of your older comments', ['@maxcomment' => $limit]));
+      drupal_set_message(t('The Node you want to comment has reached its maximum of @maxcommentnode comments', ['@maxcommentnode' => $limitNode]));
     }
   }
+  if ($maxCommmentUser) {
+    if ($maxCommmentUser <= $currentCommentUser && !$user->hasPermission('bypass comment limit')) {
+      $comment->delete();
+      drupal_set_message(t('You have commented @maxcomment times, please edit or delete some of your older comments', ['@maxcomment' => $limitUser]));
+    }
+  }
+
 }
 
 /**
- * Get comment limit for this node type.
+ * Get user comment limit for this node type.
  */
-function comment_limit_get($entity_id) {
+function comment_limit_get_user($entity_id) {
   $user = Drupal::currentUser();
   $uid = $user->id();
   // Count comment of user.
@@ -87,5 +110,17 @@ function comment_limit_get($entity_id) {
     ->execute();
   $query->allowRowCount = TRUE;
   return $query->rowCount();
+}
 
+/**
+ * Get node comment limit for this node type.
+ */
+function comment_limit_get_node($entity_id) {
+  $db = Drupal::database();
+  $query = $db->select('comment_entity_statistics', 'c')
+    ->fields('c', ['comment_count'])
+    ->condition('entity_id', $entity_id)
+    ->execute()
+    ->fetchField();
+  return $query;
 }

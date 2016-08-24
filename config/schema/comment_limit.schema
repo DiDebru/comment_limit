@@ -5,4 +5,10 @@ comment.type.comment.third_party.comment_limit:
     edit_limit_per_user:
       type: number
       label: 'Comment limit per user'
-
+comment.type.comment.third_party.comment_limit:
+  type: mapping
+  label: 'Comment limit per node'
+  mapping:
+    edit_limit_per_node:
+      type: number
+      label: 'Comment limit per node'
