@@ -7,9 +7,13 @@
 
 use Drupal\comment\CommentForm;
 use Drupal\comment\Entity\Comment;
+use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\Entity;
+use Drupal\Core\Entity\Query\Sql\Query;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\field\Entity\FieldConfig;
+use Symfony\Component\Validator\Constraints\Count;
 
 /**
  * Implements hook_help().
@@ -40,7 +44,7 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
     '#title' => 'Comment limit per user',
     '#weight' => 1,
     '#min' => '0',
-    '#max' => '50',
+    '#max' => '200',
     '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE),
   ];
   $form['#validate'][] = 'comment_limit_field_config_edit_form_validate';
@@ -67,30 +71,39 @@ function comment_limit_field_config_edit_form_validate(&$form, \Drupal\Core\Form
  * Implements hook_comment_insert
  */
 function comment_limit_comment_insert(Comment $comment) {
- /* $entity_id = $comment->getCommentedEntityTypeId();
+  $user = Drupal::currentUser();
+  $entity_type = $comment->getCommentedEntityTypeId();
+  $entity_id = $comment->getCommentedEntityId();
   $node = \Drupal\node\Entity\Node::load($comment->getCommentedEntityId());
-  $bundle = $node->getType();*/
-
-  /*$maxCommment = $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);*/
-  /*->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);*/
-  /*If ($maxCommment = comment_limit_get()) {
-
-  }*/
+  $bundle = $node->getType();
+  $comment_type = FieldConfig::load($entity_type . '.' . $bundle . '.comment');
+  $maxCommment = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
+  $currentComment = comment_limit_get($entity_id);
+  $status = $comment->getStatus();
+  If ($maxCommment <= $currentComment && !$user->hasPermission('bypass comment limit')) {
+    $comment->delete();
+    drupal_set_message(t('You have commented @maxcomment times, please edit or delete some of your older comments', ['@maxcomment' => $maxCommment]));
+  }
 }
 
 /**
  * Get comment limit for this node type
  */
-/*function comment_limit_get() {
+function comment_limit_get($entity_id) {
   $user = Drupal::currentUser();
   $uid = $user->id();
   // Count comment of user
   $db = \Drupal::database();
-  $db->select('comment_field_data', 'c')
-    ->fields('c', ['entity_id', $uid])
-    ->condition('entity_id', );
+  $query = $db->select('comment_field_data', 'c')
+  ->fields('c', ['entity_id', 'uid'])
+  ->condition('uid', $uid)
+  ->condition('entity_id' ,$entity_id)
+  ->execute();
+  $query->allowRowCount = TRUE;
+  return $query->rowCount();
 
-}*/
+}
+
 
 
 
