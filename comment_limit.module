@@ -62,11 +62,12 @@ function comment_limit_comment_insert(Comment $comment) {
   $bundle = $node->getType();
   $comment_type = FieldConfig::load($entity_type . '.' . $bundle . '.comment');
   $maxCommment = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE) + 1;
+  $limit = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
   $currentComment = comment_limit_get($entity_id);
   if ($maxCommment) {
     if ($maxCommment <= $currentComment && !$user->hasPermission('bypass comment limit')) {
       $comment->delete();
-      drupal_set_message(t('You have commented @maxcomment times, please edit or delete some of your older comments', ['@maxcomment' => $maxCommment]));
+      drupal_set_message(t('You have commented @maxcomment times, please edit or delete some of your older comments', ['@maxcomment' => $limit]));
     }
   }
 }
