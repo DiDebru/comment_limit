@@ -44,10 +44,9 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
     '#title' => 'Comment limit per user',
     '#weight' => 1,
     '#min' => '0',
-    '#max' => '200',
+    '#max' => '1000',
     '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE),
   ];
-  $form['#validate'][] = 'comment_limit_field_config_edit_form_validate';
   $form['#entity_builders'][] = 'comment_limit_form_field_edit_form_add_form_builder';
 }
 
@@ -56,15 +55,6 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
  */
 function comment_limit_form_field_edit_form_add_form_builder($entity_type, FieldConfig $comment , &$form, FormStateInterface $form_state) {
   $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-user', $form_state->getValue('edit-limit-per-user'));
-}
-
-/**
- * Implements hook_FORM_ID_validate().
- */
-function comment_limit_field_config_edit_form_validate(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
-  If (!is_numeric($form_state->getValue('edit-limit-per-user')) && $form_state->getValue('edit-limit-per-user') < 0 && empty($form_state->getValue('edit-limit-per-user'))) {
-    $form_state->setErrorByName('edit-limit-per-user', t('The value of comment limit per user has to be 0 or higher'));
-  }
 }
 
 /**
@@ -79,7 +69,6 @@ function comment_limit_comment_insert(Comment $comment) {
   $comment_type = FieldConfig::load($entity_type . '.' . $bundle . '.comment');
   $maxCommment = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
   $currentComment = comment_limit_get($entity_id);
-  $status = $comment->getStatus();
   If ($maxCommment <= $currentComment && !$user->hasPermission('bypass comment limit')) {
     $comment->delete();
     drupal_set_message(t('You have commented @maxcomment times, please edit or delete some of your older comments', ['@maxcomment' => $maxCommment]));
