@@ -61,7 +61,26 @@ function comment_limit_form_field_edit_form_add_form_builder($entity_type, Field
 }
 
 /**
- * Implements hook_comment_insert().
+ * Implements hook_preprocess_HOOK().
+ */
+function comment_limit_preprocess_node(&$variables) {
+  if (in_array('node-max', $_SESSION['messages']['status']) && in_array('user-max', $_SESSION['messages']['status'])) {
+    drupal_get_messages('status', TRUE);
+    drupal_set_message(t('The comment limit for this node has been reached!'));
+    drupal_set_message(t('Your comment limit has been reached!'));
+  }
+  elseif (in_array('node-max', $_SESSION['messages']['status'])) {
+    drupal_get_messages('status', TRUE);
+    drupal_set_message(t('The comment limit for this node has been reached!'));
+  }
+  elseif (in_array('user-max', $_SESSION['messages']['status'])) {
+    drupal_get_messages('status', TRUE);
+    drupal_set_message(t('Your comment limit has been reached!'));
+  }
+}
+
+/**
+ * Implements hook_entity_insert().
  */
 function comment_limit_comment_insert(Comment $comment) {
   // General variables.
@@ -70,12 +89,12 @@ function comment_limit_comment_insert(Comment $comment) {
   $node = Node::load($comment->getCommentedEntityId());
   $bundle = $node->getType();
   $comment_type = FieldConfig::load($entity_type . '.' . $bundle . '.comment');
-  // User related variables.
+  // User limit related variables.
   $user = Drupal::currentUser();
   $maxCommmentUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE) + 1;
   $limitUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
   $currentCommentUser = comment_limit_get_user($entity_id);
-  // Node related variables
+  // Node limit related variables
   $maxCommentNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE) + 1;
   $limitNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE);
   $currentCommentNode = comment_limit_get_node($entity_id);
@@ -83,16 +102,15 @@ function comment_limit_comment_insert(Comment $comment) {
   if ($maxCommentNode) {
     if ($maxCommentNode <= $currentCommentNode && !$user->hasPermission('bypass comment limit')) {
       $comment->delete();
-      drupal_set_message(t('The Node you want to comment has reached its maximum of @maxcommentnode comments', ['@maxcommentnode' => $limitNode]));
+      drupal_set_message('node-max');
     }
   }
   if ($maxCommmentUser) {
     if ($maxCommmentUser <= $currentCommentUser && !$user->hasPermission('bypass comment limit')) {
       $comment->delete();
-      drupal_set_message(t('You have commented @maxcomment times, please edit or delete some of your older comments', ['@maxcomment' => $limitUser]));
+      drupal_set_message('user-max');
     }
   }
-
 }
 
 /**
