@@ -1,0 +1,5 @@
+services:
+  comment_limit.query:
+    class: Drupal\comment_limit\CommentLimitQuery
+    arguments: []
+
