@@ -1,6 +1,7 @@
 <?php
 
 namespace Drupal\comment_limit;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Class CommentLimitQuery.
@@ -12,18 +13,21 @@ class CommentLimitQuery {
   /** @var  $entity_id */
   protected $entity_id;
 
+  /** @var  $user */
+  protected $user;
+
   /**
    * Constructor.
    */
-  public function __construct($entity_id) {
+  public function __construct($entity_id, AccountInterface $user) {
     $this->entity_id = $entity_id;
+    $this->user = $user;
   }
   /**
    * Get user comment limit for this node type.
    */
   function comment_limit_get_user() {
-    $user = \Drupal::currentUser();
-    $uid = $user->id();
+    $uid = $this->user->id();
     // Count comment of user.
     $db = \Drupal::database();
     $query = $db->select('comment_field_data', 'c')

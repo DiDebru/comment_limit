@@ -88,17 +88,15 @@ function comment_limit_comment_insert(Comment $comment) {
   $entity_type = $comment->getCommentedEntityTypeId();
   $entity_id = $comment->getCommentedEntityId();
   $node = Node::load($comment->getCommentedEntityId());
+  $user = Drupal::currentUser();
   $bundle = $node->getType();
   $comment_type = FieldConfig::load($entity_type . '.' . $bundle . '.comment');
-  $commentQuery = new CommentLimitQuery($entity_id);
+  $commentQuery = new CommentLimitQuery($entity_id, $user);
   // User limit related variables.
-  $user = Drupal::currentUser();
   $maxCommmentUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE) + 1;
-  $limitUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
   $currentCommentUser = $commentQuery->comment_limit_get_user();
   // Node limit related variables
   $maxCommentNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE) + 1;
-  $limitNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE);
   $currentCommentNode = $commentQuery->comment_limit_get_node();
 
   if ($maxCommentNode) {
