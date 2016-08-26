@@ -6,6 +6,7 @@
  */
 
 use Drupal\comment\Entity\Comment;
+use Drupal\comment_limit\CommentLimitQuery;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\field\Entity\FieldConfig;
@@ -89,15 +90,16 @@ function comment_limit_comment_insert(Comment $comment) {
   $node = Node::load($comment->getCommentedEntityId());
   $bundle = $node->getType();
   $comment_type = FieldConfig::load($entity_type . '.' . $bundle . '.comment');
+  $commentQuery = new CommentLimitQuery($entity_id);
   // User limit related variables.
   $user = Drupal::currentUser();
   $maxCommmentUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE) + 1;
   $limitUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
-  $currentCommentUser = comment_limit_get_user($entity_id);
+  $currentCommentUser = $commentQuery->comment_limit_get_user();
   // Node limit related variables
   $maxCommentNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE) + 1;
   $limitNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE);
-  $currentCommentNode = comment_limit_get_node($entity_id);
+  $currentCommentNode = $commentQuery->comment_limit_get_node();
 
   if ($maxCommentNode) {
     if ($maxCommentNode <= $currentCommentNode && !$user->hasPermission('bypass comment limit')) {
@@ -111,34 +113,4 @@ function comment_limit_comment_insert(Comment $comment) {
       drupal_set_message('user-max');
     }
   }
-}
-
-/**
- * Get user comment limit for this node type.
- */
-function comment_limit_get_user($entity_id) {
-  $user = Drupal::currentUser();
-  $uid = $user->id();
-  // Count comment of user.
-  $db = \Drupal::database();
-  $query = $db->select('comment_field_data', 'c')
-    ->fields('c', ['entity_id', 'uid'])
-    ->condition('uid', $uid)
-    ->condition('entity_id', $entity_id)
-    ->execute();
-  $query->allowRowCount = TRUE;
-  return $query->rowCount();
-}
-
-/**
- * Get node comment limit for this node type.
- */
-function comment_limit_get_node($entity_id) {
-  $db = Drupal::database();
-  $query = $db->select('comment_entity_statistics', 'c')
-    ->fields('c', ['comment_count'])
-    ->condition('entity_id', $entity_id)
-    ->execute()
-    ->fetchField();
-  return $query;
 }
