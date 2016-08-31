@@ -31,26 +31,30 @@ function comment_limit_help($route_name, RouteMatchInterface $route_match) {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterface $form_state) {
+function comment_limit_form_alter(&$form, FormStateInterface $form_state) {
   /** @var CommentForm $comment */
   $comment = $form_state->getFormObject()->getEntity();
-  $form['edit-limit-per-user'] = [
-    '#type' => 'number',
-    '#title' => 'Comment limit per user',
-    '#weight' => 1,
-    '#min' => '0',
-    '#max' => '1000',
-    '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE),
-  ];
-  $form['edit-limit-per-node'] = [
-    '#type' => 'number',
-    '#title' => 'Comment limit per node',
-    '#weight' => 1,
-    '#min' => '0',
-    '#max' => '10000',
-    '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE),
-  ];
-  $form['#entity_builders'][] = 'comment_limit_form_field_edit_form_add_form_builder';
+  $field_type = $comment->getFieldStorageDefinition()->getType();
+  if ($field_type == 'comment') {
+    $form['edit-limit-per-user'] = [
+      '#type' => 'number',
+      '#title' => 'Comment limit per user',
+      '#weight' => 1,
+      '#min' => '0',
+      '#max' => '1000',
+      '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE),
+    ];
+    $form['edit-limit-per-node'] = [
+      '#type' => 'number',
+      '#title' => 'Comment limit per node',
+      '#weight' => 1,
+      '#min' => '0',
+      '#max' => '10000',
+      '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE),
+    ];
+
+    $form['#entity_builders'][] = 'comment_limit_form_field_edit_form_add_form_builder';
+  }
 }
 
 /**
@@ -95,7 +99,7 @@ function comment_limit_comment_insert(Comment $comment) {
   // User limit related variables.
   $maxCommmentUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE) + 1;
   $currentCommentUser = $commentQuery->comment_limit_get_user();
-  // Node limit related variables
+  // Node limit related variables.
   $maxCommentNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE) + 1;
   $currentCommentNode = $commentQuery->comment_limit_get_node();
 
