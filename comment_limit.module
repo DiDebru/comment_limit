@@ -31,7 +31,7 @@ function comment_limit_help($route_name, RouteMatchInterface $route_match) {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function comment_limit_form_alter(&$form, FormStateInterface $form_state) {
+function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterface $form_state) {
   /** @var CommentForm $comment */
   $comment = $form_state->getFormObject()->getEntity();
   $field_type = $comment->getFieldStorageDefinition()->getType();
