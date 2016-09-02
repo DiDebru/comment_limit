@@ -1,4 +1,3 @@
-
 bypass comment limit:
   title: 'Bypass comment limit'
-  description: 'Allows a user to bypass the limit set on comments.'
+  description: 'Allow a user to bypass the limit set on comments.'

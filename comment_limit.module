@@ -29,25 +29,36 @@ function comment_limit_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_form_FORM_ID_alter().
  */
 function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterface $form_state) {
-  /** @var CommentForm $comment */
   $comment = $form_state->getFormObject()->getEntity();
   $field_type = $comment->getFieldStorageDefinition()->getType();
   if ($field_type == 'comment') {
-    $form['edit-limit-per-user'] = [
+    if ($comment->getThirdPartySetting('comment_limit', 'user_limit', FALSE) == NULL) {
+      $default_user = '0';
+    }
+    else {
+      $default_user = $comment->getThirdPartySetting('comment_limit', 'user_limit', FALSE);
+    }
+    $form['user_limit'] = [
       '#type' => 'number',
       '#title' => 'Comment limit per user',
+      '#description' => t('0 means no limit'),
       '#weight' => 1,
       '#min' => '0',
-      '#max' => '1000',
-      '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE),
+      '#default_value' => $default_user,
     ];
-    $form['edit-limit-per-entity'] = [
+    if ($comment->getThirdPartySetting('comment_limit', 'entity_limit', FALSE) == NULL) {
+      $default_entity = '0';
+    }
+    else {
+      $default_entity = $comment->getThirdPartySetting('comment_limit', 'entity_limit', FALSE);
+    }
+    $form['entity_limit'] = [
       '#type' => 'number',
       '#title' => 'Comment limit per entity',
+      '#description' => t('0 means no limit'),
       '#weight' => 1,
       '#min' => '0',
-      '#max' => '10000',
-      '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-entity', FALSE),
+      '#default_value' => $default_entity,
     ];
 
     $form['#entity_builders'][] = 'comment_limit_form_field_edit_form_add_form_builder';
@@ -62,7 +73,7 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
   $max_comment_entity_reached = FALSE;
   $entity_type = $comment->getCommentedEntityTypeId();
   $entity_id = $comment->getCommentedEntityId();
-  $comment_limit = Drupal::service('comment_limit.get_limit');
+  $comment_limit = Drupal::service('comment_limit.service');
   if ($comment_limit->getEntityLimit($entity_id, $entity_type)) {
     if ($comment_limit->hasEntityLimitReached($entity_id, $entity_type)) {
       $form = [];
@@ -71,12 +82,12 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
         '#tag' => 'p',
         '#value' => t('The comment limit for this @entity was reached', ['@entity' => $entity_type]),
       ];
-      $maxCommentNodeReached = TRUE;
+      $max_comment_entity_reached = TRUE;
     }
   }
   if ($comment_limit->getUserLimit($entity_id, $entity_type)) {
     if ($comment_limit->hasUserLimitReached($entity_id, $entity_type)) {
-      if ($maxCommentNodeReached == FALSE) {
+      if ($max_comment_entity_reached == FALSE) {
         $form = [];
       }
       $form['error_user'] = [
@@ -89,9 +100,26 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
 }
 
 /**
- * Formbuilder.
+ * Custom formbuilder for field config form.
+ *
+ * @param string $entity_type
+ *    The entity type.
+ * @param FieldConfig $comment
+ *    The FieldConfig object of the comment entity.
+ * @param FormStateInterface $form_state
+ *    The form values from the field config form.
  */
 function comment_limit_form_field_edit_form_add_form_builder($entity_type, FieldConfig $comment, &$form, FormStateInterface $form_state) {
-  $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-user', $form_state->getValue('edit-limit-per-user'));
-  $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-entity', $form_state->getValue('edit-limit-per-entity'));
+  if ($form_state->getValue('user_limit') == '0') {
+   $form_state->setValue('user_limit', NULL);
+  }
+  else {
+    $comment->setThirdPartySetting('comment_limit', 'user_limit', $form_state->getValue('user_limit'));
+  }
+  if ($form_state->getValue('entity_limit') == '0') {
+    $form_state->setValue('entity_limit', NULL);
+  }
+  else {
+    $comment->setThirdPartySetting('comment_limit', 'entity_limit', $form_state->getValue('entity_limit'));
+  }
 }

@@ -92,7 +92,7 @@ class CommentLimit {
    */
   public function getEntityLimit($entity_id, $entity_type) {
     $commentLimit = $this->getFieldConfig($entity_id, $entity_type);
-    return $commentLimit->getThirdPartySetting('comment_limit', 'edit-limit-per-entity', FALSE);
+    return $commentLimit->getThirdPartySetting('comment_limit', 'entity_limit', FALSE);
   }
 
   /**
@@ -107,7 +107,7 @@ class CommentLimit {
    *   Returns the comment limit for the user.
    */
   public function getUserLimit($entity_id, $entity_type) {
-    return $this->getFieldConfig($entity_id, $entity_type)->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
+    return $this->getFieldConfig($entity_id, $entity_type)->getThirdPartySetting('comment_limit', 'user_limit', FALSE);
   }
 
   /**
