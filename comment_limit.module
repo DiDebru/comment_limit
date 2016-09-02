@@ -5,12 +5,8 @@
  * Contains comment_limit.module..
  */
 
-use Drupal\comment\Entity\Comment;
-use Drupal\comment_limit\CommentLimit;
 use Drupal\comment_limit\CommentLimitQuery;
 use Drupal\Core\Entity\Entity;
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\field\Entity\FieldConfig;
@@ -75,10 +71,10 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
   $comment_type = FieldConfig::load($entity_type . '.' . $bundle . '.comment');
   $commentQuery = Drupal::service('comment_limit.get_limit');
   // User limit related variables.
-  $maxCommmentUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE) + 1;
+  $maxCommmentUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
   $currentCommentUser = $commentQuery->getUserLimit($entity_id);
   // Node limit related variables.
-  $maxCommentNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE) + 1;
+  $maxCommentNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE);
   $currentCommentNode = $commentQuery->getEntityLimit($entity_id);
 
   if ($maxCommentNode) {
