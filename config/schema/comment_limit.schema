@@ -7,8 +7,8 @@ comment.type.comment.third_party.comment_limit:
       label: 'Comment limit per user'
 comment.type.comment.third_party.comment_limit:
   type: mapping
-  label: 'Comment limit per node'
+  label: 'Comment limit per entity'
   mapping:
-    edit_limit_per_node:
+    edit_limit_per_entity:
       type: number
-      label: 'Comment limit per node'
+      label: 'Comment limit per entity'

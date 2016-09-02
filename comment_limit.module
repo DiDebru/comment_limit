@@ -47,7 +47,7 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
       '#weight' => 1,
       '#min' => '0',
       '#max' => '10000',
-      '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE),
+      '#default_value' => $comment->getThirdPartySetting('comment_limit', 'edit-limit-per-entity', FALSE),
     ];
 
     $form['#entity_builders'][] = 'comment_limit_form_field_edit_form_add_form_builder';
@@ -59,35 +59,31 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
  */
 function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_state) {
   $comment = $form_state->getFormObject()->getEntity();
-  // General variables.
-  $maxCommentNodeReached = FALSE;
-  $entityType = $comment->getCommentedEntityTypeId();
-  $entityId = $comment->getCommentedEntityId();
-  $commentedEntity = Drupal::entityTypeManager()->getStorage($entityType)->load($entityId);
-  $entityBundle = $commentedEntity->bundle();
-  $commentType = FieldConfig::load($entityType . '.' . $entityBundle . '.comment');
-  $commentLimit = Drupal::service('comment_limit.get_limit');
-
-  if ($commentLimit->getEntityLimit()) {
-    if ($commentLimit->hasUserLimitReached($entityId)) {
+  $max_comment_entity_reached = FALSE;
+  $entity_type = $comment->getCommentedEntityTypeId();
+  $entity_id = $comment->getCommentedEntityId();
+  $comment_limit = Drupal::service('comment_limit.get_limit');
+  $test1 = $comment_limit->hasEntityLimitReached($entity_id, $entity_type);
+  if ($comment_limit->getEntityLimit($entity_id, $entity_type)) {
+    if ($comment_limit->hasEntityLimitReached($entity_id, $entity_type)) {
       $form = [];
-      $form['errorNode'] = [
+      $form['error_node'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#value' => t('The comment limit for this @entity was reached', ['@entity' => $entityType]),
+        '#value' => t('The comment limit for this @entity was reached', ['@entity' => $entity_type]),
       ];
       $maxCommentNodeReached = TRUE;
     }
   }
-  if ($commentLimit->getUserLimit()) {
-    if ($commentLimit->hasEntityLimitReached()) {
+  if ($comment_limit->getUserLimit($entity_id, $entity_type)) {
+    if ($comment_limit->hasUserLimitReached($entity_id, $entity_type)) {
       if ($maxCommentNodeReached == FALSE) {
         $form = [];
       }
-      $form['errorUser'] = [
+      $form['error_user'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#value' => t('You have reached your comment limit for this @entity', ['@entity' => $entityType]),
+        '#value' => t('You have reached your comment limit for this @entity', ['@entity' => $entity_type]),
       ];
     }
   }
@@ -98,5 +94,5 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
  */
 function comment_limit_form_field_edit_form_add_form_builder($entity_type, FieldConfig $comment, &$form, FormStateInterface $form_state) {
   $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-user', $form_state->getValue('edit-limit-per-user'));
-  $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-entity', $form_state->getValue('edit-limit-per-node'));
+  $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-entity', $form_state->getValue('edit-limit-per-entity'));
 }
