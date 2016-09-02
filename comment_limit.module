@@ -63,7 +63,6 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
   $entity_type = $comment->getCommentedEntityTypeId();
   $entity_id = $comment->getCommentedEntityId();
   $comment_limit = Drupal::service('comment_limit.get_limit');
-  $test1 = $comment_limit->hasEntityLimitReached($entity_id, $entity_type);
   if ($comment_limit->getEntityLimit($entity_id, $entity_type)) {
     if ($comment_limit->hasEntityLimitReached($entity_id, $entity_type)) {
       $form = [];
