@@ -32,16 +32,20 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
   $comment = $form_state->getFormObject()->getEntity();
   $field_type = $comment->getFieldStorageDefinition()->getType();
   if ($field_type == 'comment') {
+    $form['comment_limit'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Comment limit'
+    ];
     if ($comment->getThirdPartySetting('comment_limit', 'user_limit', FALSE) == NULL) {
       $default_user = '0';
     }
     else {
       $default_user = $comment->getThirdPartySetting('comment_limit', 'user_limit', FALSE);
     }
-    $form['user_limit'] = [
+    $form['comment_limit']['user_limit'] = [
       '#type' => 'number',
-      '#title' => 'Comment limit per user',
-      '#description' => t('0 means no limit'),
+      '#title' => 'User limit',
+      '#description' => t('The maximum number of comments per user on this entity, e.g. 2 or 0 for no limit'),
       '#weight' => 1,
       '#min' => '0',
       '#default_value' => $default_user,
@@ -52,10 +56,10 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
     else {
       $default_entity = $comment->getThirdPartySetting('comment_limit', 'entity_limit', FALSE);
     }
-    $form['entity_limit'] = [
+    $form['comment_limit']['entity_limit'] = [
       '#type' => 'number',
-      '#title' => 'Comment limit per entity',
-      '#description' => t('0 means no limit'),
+      '#title' => 'Entity limit',
+      '#description' => t('The maximum number of comments on this entity, e.g. 10 or 0 for no limit'),
       '#weight' => 1,
       '#min' => '0',
       '#default_value' => $default_entity,
