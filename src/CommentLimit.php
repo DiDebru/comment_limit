@@ -2,7 +2,6 @@
 
 namespace Drupal\comment_limit;
 
-
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\field\Entity\FieldConfig;
