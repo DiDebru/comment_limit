@@ -28,6 +28,8 @@ class CommentLimit {
   protected $database;
 
   /**
+   * FieldConfig of the current comment field.
+   *
    * @var FieldConfig $comment
    */
   protected $comment;
@@ -44,7 +46,7 @@ class CommentLimit {
   /**
    * Get user comment limit for this user.
    *
-   * @return
+   * @return int
    *    Current count of comments the user has made on an entity.
    */
   public function getCurrentCommentCountForUser($entityId) {
@@ -61,7 +63,7 @@ class CommentLimit {
   /**
    * Get node comment limit for this entity.
    *
-   * @return
+   * @return int
    *    Current count of comments that were made on an entity.
    */
   public function getCurrentCommentsOnEntity($entityId) {
@@ -73,15 +75,36 @@ class CommentLimit {
     return $query;
   }
 
+  /**
+   * Get the comment limit of the entity.
+   *
+   * @return mixed|null
+   *   Returns the comment limit of the entity.
+   */
   public function getEntityLimit() {
     return $this->comment->getThirdPartySetting('comment_limit', 'edit-limit-per-entity', FALSE);
   }
 
+  /**
+   * Get the comment limit for the user.
+   *
+   * @return mixed|null
+   *   Returns the comment limit for the user.
+   */
   public function getUserLimit() {
     return $this->comment->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE);
   }
 
-  public function hasUserLimitReached ($entityId) {
+  /**
+   * Has the user reached his/her comment limit.
+   *
+   * @param int $entityId
+   *   The ID of the current entity.
+   *
+   * @return bool
+   *    Returns TRUE or FALSE.
+   */
+  public function hasUserLimitReached($entityId) {
     if ($this->getCurrentCommentCountForUser($entityId) <= $this->getUserLimit() && $this->user->hasPermission('bypass comment limit')) {
       return TRUE;
     }
@@ -90,7 +113,16 @@ class CommentLimit {
     }
   }
 
-  public function isEntityLimitReached ($entityId) {
+  /**
+   * Has the comment limit for the entity been reached.
+   *
+   * @param int $entityId
+   *    The ID of the current entity.
+   *
+   * @return bool
+   *    Returns TRUE or FALSE.
+   */
+  public function isEntityLimitReached($entityId) {
     if ($this->getCurrentCommentsOnEntity($entityId) <= $this->getEntityLimit() && $this->user->hasPermission('bypass comment limit')) {
       return TRUE;
     }
