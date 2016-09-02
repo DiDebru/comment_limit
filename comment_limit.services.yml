@@ -1,5 +1,5 @@
 services:
-  comment_limit.query:
-    class: Drupal\comment_limit\CommentLimitQuery
-    arguments: []
+  comment_limit.get_limit:
+    class: Drupal\comment_limit\CommentLimit
+    arguments: ['@database', '@current_user']
 

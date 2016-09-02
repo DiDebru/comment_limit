@@ -6,11 +6,14 @@
  */
 
 use Drupal\comment\Entity\Comment;
+use Drupal\comment_limit\CommentLimit;
 use Drupal\comment_limit\CommentLimitQuery;
+use Drupal\Core\Entity\Entity;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\field\Entity\FieldConfig;
-use Drupal\node\Entity\Node;
 
 /**
  * Implements hook_help().
@@ -58,6 +61,52 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
 }
 
 /**
+ * Implements hook_form_alter().
+ */
+function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_state) {
+  $entity = $form_state->getFormObject()->getEntity();
+  // General variables.
+  $maxCommentNodeReached = FALSE;
+  $entity_type = $entity->getCommentedEntityTypeId();
+  $entity_id = $entity->getCommentedEntityId();
+  $commented_entity = Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
+  $user = Drupal::currentUser();
+  $bundle = $commented_entity->bundle();
+  $comment_type = FieldConfig::load($entity_type . '.' . $bundle . '.comment');
+  $commentQuery = Drupal::service('comment_limit.get_limit');
+  // User limit related variables.
+  $maxCommmentUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE) + 1;
+  $currentCommentUser = $commentQuery->getUserLimit($entity_id);
+  // Node limit related variables.
+  $maxCommentNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE) + 1;
+  $currentCommentNode = $commentQuery->getEntityLimit($entity_id);
+
+  if ($maxCommentNode) {
+    if ($maxCommentNode <= $currentCommentNode && !$user->hasPermission('bypass comment limit')) {
+      $form = [];
+      $form['errorNode'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => t('The comment limit for this @entity was reached', ['@entity' => $entity_type]),
+      ];
+      $maxCommentNodeReached = TRUE;
+    }
+  }
+  if ($maxCommmentUser) {
+    if ($maxCommmentUser <= $currentCommentUser && !$user->hasPermission('bypass comment limit')) {
+      if ($maxCommentNodeReached == FALSE) {
+        $form = [];
+      }
+      $form['errorUser'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => t('You have reached your comment limit for this @entity', ['@entity' => $entity_type]),
+      ];
+    }
+  }
+}
+
+/**
  * Formbuilder.
  */
 function comment_limit_form_field_edit_form_add_form_builder($entity_type, FieldConfig $comment, &$form, FormStateInterface $form_state) {
@@ -65,54 +114,3 @@ function comment_limit_form_field_edit_form_add_form_builder($entity_type, Field
   $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-node', $form_state->getValue('edit-limit-per-node'));
 }
 
-/**
- * Implements hook_preprocess_HOOK().
- */
-function comment_limit_preprocess_node(&$variables) {
-  if (in_array('node-max', $_SESSION['messages']['status']) && in_array('user-max', $_SESSION['messages']['status'])) {
-    drupal_get_messages('status', TRUE);
-    drupal_set_message(t('The comment limit for this node has been reached!'));
-    drupal_set_message(t('Your comment limit has been reached!'));
-  }
-  elseif (in_array('node-max', $_SESSION['messages']['status'])) {
-    drupal_get_messages('status', TRUE);
-    drupal_set_message(t('The comment limit for this node has been reached!'));
-  }
-  elseif (in_array('user-max', $_SESSION['messages']['status'])) {
-    drupal_get_messages('status', TRUE);
-    drupal_set_message(t('Your comment limit has been reached!'));
-  }
-}
-
-/**
- * Implements hook_entity_insert().
- */
-function comment_limit_comment_insert(Comment $comment) {
-  // General variables.
-  $entity_type = $comment->getCommentedEntityTypeId();
-  $entity_id = $comment->getCommentedEntityId();
-  $node = Node::load($comment->getCommentedEntityId());
-  $user = Drupal::currentUser();
-  $bundle = $node->getType();
-  $comment_type = FieldConfig::load($entity_type . '.' . $bundle . '.comment');
-  $commentQuery = new CommentLimitQuery($entity_id, $user);
-  // User limit related variables.
-  $maxCommmentUser = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-user', FALSE) + 1;
-  $currentCommentUser = $commentQuery->comment_limit_get_user();
-  // Node limit related variables.
-  $maxCommentNode = $comment_type->getThirdPartySetting('comment_limit', 'edit-limit-per-node', FALSE) + 1;
-  $currentCommentNode = $commentQuery->comment_limit_get_node();
-
-  if ($maxCommentNode) {
-    if ($maxCommentNode <= $currentCommentNode && !$user->hasPermission('bypass comment limit')) {
-      $comment->delete();
-      drupal_set_message('node-max');
-    }
-  }
-  if ($maxCommmentUser) {
-    if ($maxCommmentUser <= $currentCommentUser && !$user->hasPermission('bypass comment limit')) {
-      $comment->delete();
-      drupal_set_message('user-max');
-    }
-  }
-}
