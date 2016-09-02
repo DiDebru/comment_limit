@@ -5,8 +5,6 @@
  * Contains comment_limit.module..
  */
 
-use Drupal\comment_limit\CommentLimitQuery;
-use Drupal\Core\Entity\Entity;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\field\Entity\FieldConfig;
@@ -109,4 +107,3 @@ function comment_limit_form_field_edit_form_add_form_builder($entity_type, Field
   $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-user', $form_state->getValue('edit-limit-per-user'));
   $comment->setThirdPartySetting('comment_limit', 'edit-limit-per-node', $form_state->getValue('edit-limit-per-node'));
 }
-
