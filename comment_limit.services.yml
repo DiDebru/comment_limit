@@ -2,4 +2,3 @@ services:
   comment_limit.service:
     class: Drupal\comment_limit\CommentLimit
     arguments: ['@database', '@current_user']
-

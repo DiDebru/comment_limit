@@ -7,6 +7,7 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\TypedData\DataDefinition;
 use Drupal\field\Entity\FieldConfig;
 
 /**
@@ -34,7 +35,7 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
   if ($field_type == 'comment') {
     $form['comment_limit'] = [
       '#type' => 'fieldset',
-      '#title' => 'Comment limit'
+      '#title' => 'Comment limit',
     ];
     if ($comment->getThirdPartySetting('comment_limit', 'user_limit', FALSE) == NULL) {
       $default_user = '0';
@@ -73,11 +74,19 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
  * Implements hook_form_alter().
  */
 function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_state) {
+
   $comment = $form_state->getFormObject()->getEntity();
   $max_comment_entity_reached = FALSE;
   $entity_type = $comment->getCommentedEntityTypeId();
   $entity_id = $comment->getCommentedEntityId();
   $comment_limit = Drupal::service('comment_limit.service');
+  $comment_limit->setEntityId($entity_id);
+  $comment_limit->setEntityType($entity_type);
+  $definitions = DataDefinition::create('boolean')
+    ->addConstraint('CommentFormConstraint', []);
+  $typed_data = Drupal::typedDataManager()->create($definitions);
+  $violations = $typed_data->validate();
+  $count = $violations->count();
   if ($comment_limit->getEntityLimit($entity_id, $entity_type)) {
     if ($comment_limit->hasEntityLimitReached($entity_id, $entity_type)) {
       $form = [];
@@ -115,7 +124,7 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
  */
 function comment_limit_form_field_edit_form_add_form_builder($entity_type, FieldConfig $comment, &$form, FormStateInterface $form_state) {
   if ($form_state->getValue('user_limit') == '0') {
-   $form_state->setValue('user_limit', NULL);
+    $form_state->setValue('user_limit', NULL);
   }
   else {
     $comment->setThirdPartySetting('comment_limit', 'user_limit', $form_state->getValue('user_limit'));
@@ -126,4 +135,49 @@ function comment_limit_form_field_edit_form_add_form_builder($entity_type, Field
   else {
     $comment->setThirdPartySetting('comment_limit', 'entity_limit', $form_state->getValue('entity_limit'));
   }
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function comment_limit_entity_extra_field_info() {
+  $fields = [];
+  $entities = [];
+  $entity_ids = [];
+  $comment_limit = Drupal::service('comment_limit.service');
+  $types = $comment_limit->getAllEntityTypes();
+  foreach ($types as $type) {
+    $entities[$type] = Drupal::entityTypeManager()
+      ->getStorage($type)
+      ->loadMultiple();
+  }
+  foreach ($types as $type) {
+    $entity_ids[$type] = array_keys($entities[$type]);
+  }
+  foreach ($types as $type) {
+    foreach ($entity_ids[$type] as $id) {
+      $entity = Drupal::entityTypeManager()
+        ->getStorage($type)
+        ->load($id);
+      if ($entity->hasField('comment')) {
+        $fields[$type][$entity->bundle()] = [
+          'display' => [
+            'entity_limit' => [
+              'label' => t('Entity limit status.'),
+              'description' => t('Shows the limit status of the entity'),
+              'weight' => 0,
+              'visible' => TRUE,
+            ],
+            'user_limit' => [
+              'label' => t('User limit status.'),
+              'description' => t('Shows the limit status of the user'),
+              'weight' => 0,
+              'visible' => TRUE,
+            ],
+          ],
+        ];
+      }
+    }
+  }
+  return $fields;
 }

@@ -3,6 +3,7 @@
 namespace Drupal\comment_limit;
 
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\field\Entity\FieldConfig;
 
@@ -26,6 +27,20 @@ class CommentLimit {
    * @var Connection $database
    */
   protected $database;
+
+  /**
+   * Entity Id.
+   *
+   * @var int $entityId
+   */
+  protected $entityId;
+
+  /**
+   * Entity type.
+   *
+   * @var string $entityType
+   */
+  protected $entityType;
 
   /**
    * Constructor.
@@ -166,6 +181,62 @@ class CommentLimit {
     $entity_bundle = $entity->bundle();
     $field_config = FieldConfig::load($entity_type . '.' . $entity_bundle . '.comment');
     return $field_config;
+  }
+
+  /**
+   * Set the entity id.
+   *
+   * @param int $entityId
+   *    The current entity id called in hook_form_FORM_ID_alter().
+   */
+  public function setEntityId($entityId) {
+    $this->entityId = $entityId;
+  }
+
+  /**
+   * Set the entity type.
+   *
+   * @param string $entityType
+   *    The current entity type called in hook_form_FORM_ID_alter().
+   */
+  public function setEntityType($entityType) {
+    $this->entityType = $entityType;
+  }
+
+  /**
+   * Get the entity id.
+   *
+   * @return int entityId
+   *   Get the entity id called in hook_form_FORM_ID_alter().
+   */
+  public function getEntityId() {
+    return $this->entityId;
+  }
+
+  /**
+   * Get the entity type.
+   *
+   * @return string entity type
+   *    Get the entity type called in hook_form_FORM_ID_alter().
+   */
+  public function getEntityType() {
+    return $this->entityType;
+  }
+
+  /**
+   * Get all ContentEntityTypes.
+   *
+   * @return array entity types
+   *    Get an array of all ContentEntities.
+   */
+  public function getAllEntityTypes() {
+    // Get all entities.
+    $entity_types = \Drupal::entityTypeManager()->getDefinitions();
+    $content_entity_types = array_filter($entity_types, function ($entity_type) {
+      return $entity_type instanceof ContentEntityTypeInterface;
+    });
+    $content_entity_type_ids = array_keys($content_entity_types);
+    return $content_entity_type_ids;
   }
 
 }
