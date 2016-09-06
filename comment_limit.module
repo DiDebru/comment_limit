@@ -171,3 +171,39 @@ function comment_limit_entity_extra_field_info() {
   }
   return $fields;
 }
+
+/**
+ * Implements hook_entity_view().
+ */
+function comment_limit_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+  if ($entity->hasField('comment')) {
+    $comment_limit = Drupal::service('comment_limit.service');
+    $entity_id = $entity->id();
+    $entity_type = $entity->getEntityTypeId();
+    $entity_limit = $comment_limit->getEntityLimit($entity_id, $entity_type);
+    $user_limit = $comment_limit->getUserLimit($entity_id, $entity_type);
+    $entity_current = $comment_limit->getCurrentCommentsOnEntity($entity_id, $entity_type);
+    $user_current = $comment_limit->getCurrentCommentCountForUser($entity_id, $entity_type);
+    if (!$comment_limit->hasEntityLimitReached($entity_id, $entity_type) || !$comment_limit->hasUserLimitReached($entity_id, $entity_type)) {
+      if ($display->getComponent('entity_limit') && $display->getComponent('user_limit')) {
+        $build['entity_limit'] = [
+          '#type' => 'status_messages',
+          '#markup' => '<b>' . t('This %entity_bundle is generally limited to a maximum of %maximum comments, %count have already been posted.', [
+            '%entity_bundle' => $entity->bundle(),
+            '%maximum' => $entity_limit,
+            '%count' => $entity_current,
+          ]) . '</b>',
+        ];
+        $build['user_limit'] = [
+          '#type' => 'html_tag',
+          '#tag' => 'b',
+          '#markup' => '<b>' . t('You may post a maximum of %maximum comments on this %entity_bundle, having %count already posted', [
+            '%entity_bundle' => $entity->bundle(),
+            '%maximum' => $user_limit,
+            '%count' => $user_current,
+          ]) . '</b>' ,
+        ];
+      }
+    }
+  }
+}
