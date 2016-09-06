@@ -14,6 +14,10 @@ use Symfony\Component\Validator\Constraint;
  */
 class CommentFormConstraint extends Constraint {
 
-  public $message = 'The comment limit for this %bundle was reached.';
+  public $entityId;
+
+  public $entityType;
+
+  public $bundle;
 
 }
