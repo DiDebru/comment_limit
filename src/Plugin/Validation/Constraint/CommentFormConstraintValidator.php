@@ -71,8 +71,7 @@ class CommentFormConstraintValidator extends ConstraintValidator implements Cont
           $this->commentLimit->hasEntityLimitReached($entity_id, $entity_type) &&
           $this->commentLimit->hasUserLimitReached($entity_id, $entity_type)
         ) {
-          // The maximum of %comments is reached for you and this %bundle.
-          return $this->context->addViolation(t('The comment limit for this @entity was reached', ['@entity' => $constraint->bundle]));
+          return $this->context->addViolation(t('The comment limit for this @entity and your limit were reached', ['@entity' => $constraint->bundle]));
         }
       }
       if ($this->commentLimit->getEntityLimit($entity_id, $entity_type)) {
@@ -82,12 +81,7 @@ class CommentFormConstraintValidator extends ConstraintValidator implements Cont
       }
       if ($this->commentLimit->getUserLimit($entity_id, $entity_type)) {
         if ($this->commentLimit->hasUserLimitReached($entity_id, $entity_type)) {
-          $form['error_user'] = [
-            '#type' => 'html_tag',
-            '#tag' => 'p',
-            '#value' => t('You have reached your comment limit for this @entity', ['@entity' => $constraint->bundle]),
-          ];
-          return $this->context->addViolation(t('The comment limit for this @entity was reached', ['@entity' => $constraint->bundle]));
+          return $this->context->addViolation(t('You have reached your comment limit for this @entity', ['@entity' => $constraint->bundle]));
         }
       }
     }
