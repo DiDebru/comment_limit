@@ -71,7 +71,7 @@ class CommentFormConstraintValidator extends ConstraintValidator implements Cont
           $this->commentLimit->hasEntityLimitReached($entity_id, $entity_type) &&
           $this->commentLimit->hasUserLimitReached($entity_id, $entity_type)
         ) {
-          return $this->context->addViolation(t('The comment limit for this @entity and your limit were reached', ['@entity' => $constraint->bundle]));
+          return $this->context->addViolation(t('The comment limits for this @entity and your limit were reached', ['@entity' => $constraint->bundle]));
         }
       }
       if ($this->commentLimit->getEntityLimit($entity_id, $entity_type)) {
