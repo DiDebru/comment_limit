@@ -184,46 +184,6 @@ class CommentLimit {
   }
 
   /**
-   * Set the entity id.
-   *
-   * @param int $entityId
-   *    The current entity id called in hook_form_FORM_ID_alter().
-   */
-  public function setEntityId($entityId) {
-    $this->entityId = $entityId;
-  }
-
-  /**
-   * Set the entity type.
-   *
-   * @param string $entityType
-   *    The current entity type called in hook_form_FORM_ID_alter().
-   */
-  public function setEntityType($entityType) {
-    $this->entityType = $entityType;
-  }
-
-  /**
-   * Get the entity id.
-   *
-   * @return int entityId
-   *   Get the entity id called in hook_form_FORM_ID_alter().
-   */
-  public function getEntityId() {
-    return $this->entityId;
-  }
-
-  /**
-   * Get the entity type.
-   *
-   * @return string entity type
-   *    Get the entity type called in hook_form_FORM_ID_alter().
-   */
-  public function getEntityType() {
-    return $this->entityType;
-  }
-
-  /**
    * Get all ContentEntityTypes.
    *
    * @return array entity types
