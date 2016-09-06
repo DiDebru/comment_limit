@@ -5,6 +5,8 @@
  * Contains comment_limit.module..
  */
 
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\TypedData\DataDefinition;
@@ -74,26 +76,18 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
  * Implements hook_form_alter().
  */
 function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_state) {
-
-  $comment = $form_state->getFormObject()->getEntity();
-  $max_comment_entity_reached = FALSE;
-  $entity_type = $comment->getCommentedEntityTypeId();
-  $entity_id = $comment->getCommentedEntityId();
-  $comment_limit = Drupal::service('comment_limit.service');
-  $comment_limit->setEntityId($entity_id);
-  $comment_limit->setEntityType($entity_type);
   $definitions = DataDefinition::create('boolean')
     ->addConstraint('CommentFormConstraint', []);
   $typed_data = Drupal::typedDataManager()->create($definitions);
   $violations = $typed_data->validate();
-  $count = $violations->count();
-  if ($comment_limit->getEntityLimit($entity_id, $entity_type)) {
+
+  /*if ($comment_limit->getEntityLimit($entity_id, $entity_type)) {
     if ($comment_limit->hasEntityLimitReached($entity_id, $entity_type)) {
       $form = [];
       $form['error_node'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#value' => t('The comment limit for this @entity was reached', ['@entity' => $entity_type]),
+        '#value' => t('The comment limit for this @entity was reached', ['@entity' => $entity->bundle()]),
       ];
       $max_comment_entity_reached = TRUE;
     }
@@ -106,10 +100,10 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
       $form['error_user'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#value' => t('You have reached your comment limit for this @entity', ['@entity' => $entity_type]),
+        '#value' => t('You have reached your comment limit for this @entity', ['@entity' => $entity->bundle()]),
       ];
     }
-  }
+  }*/
 }
 
 /**
@@ -150,11 +144,7 @@ function comment_limit_entity_extra_field_info() {
     $entities[$type] = Drupal::entityTypeManager()
       ->getStorage($type)
       ->loadMultiple();
-  }
-  foreach ($types as $type) {
     $entity_ids[$type] = array_keys($entities[$type]);
-  }
-  foreach ($types as $type) {
     foreach ($entity_ids[$type] as $id) {
       $entity = Drupal::entityTypeManager()
         ->getStorage($type)
