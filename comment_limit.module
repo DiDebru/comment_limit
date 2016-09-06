@@ -81,7 +81,7 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
   $entity_type = $comment->getCommentedEntityTypeId();
   $entity = Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
   $bundle = $entity->bundle();
-  $definitions = DataDefinition::create('boolean')
+  $definitions = DataDefinition::create('any')
     ->addConstraint('CommentFormConstraint', [
       'entityId' => $entity_id,
       'entityType' => $entity_type,
