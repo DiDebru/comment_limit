@@ -3,6 +3,7 @@
 namespace Drupal\comment_limit\Plugin\Validation\Constraint;
 
 use Drupal\comment_limit\CommentLimit;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -13,7 +14,7 @@ use Symfony\Component\Validator\ExecutionContextInterface;
  *
  * @package Drupal\comment_limit\Plugin\Validation\Constraint
  */
-class CommentFormConstraintValidator extends ConstraintValidator {
+class CommentFormConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
 
   /**
    * Validator 2.5 and upwards compatible execution context.
