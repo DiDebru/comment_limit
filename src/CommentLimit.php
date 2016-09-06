@@ -29,20 +29,6 @@ class CommentLimit {
   protected $database;
 
   /**
-   * Entity Id.
-   *
-   * @var int $entityId
-   */
-  protected $entityId;
-
-  /**
-   * Entity type.
-   *
-   * @var string $entityType
-   */
-  protected $entityType;
-
-  /**
    * Constructor.
    */
   public function __construct(Connection $database, AccountProxyInterface $user) {
