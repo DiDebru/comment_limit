@@ -113,14 +113,14 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
  *    The form values from the field config form.
  */
 function comment_limit_form_field_edit_form_add_form_builder($entity_type, FieldConfig $comment, &$form, FormStateInterface $form_state) {
-  if ($form_state->getValue('user_limit') == '0') {
-    $form_state->setValue('user_limit', NULL);
+  if ($form_state->getValue('user_limit') == NULL) {
+    $form_state->setValue('user_limit', '0');
   }
   else {
     $comment->setThirdPartySetting('comment_limit', 'user_limit', $form_state->getValue('user_limit'));
   }
-  if ($form_state->getValue('entity_limit') == '0') {
-    $form_state->setValue('entity_limit', NULL);
+  if ($form_state->getValue('entity_limit') == NULL) {
+    $form_state->setValue('entity_limit', '0');
   }
   else {
     $comment->setThirdPartySetting('comment_limit', 'entity_limit', $form_state->getValue('entity_limit'));
