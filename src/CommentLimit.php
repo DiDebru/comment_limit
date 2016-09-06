@@ -115,7 +115,8 @@ class CommentLimit {
    *   Returns the comment limit for the user.
    */
   public function getUserLimit($entity_id, $entity_type) {
-    return $this->getFieldConfig($entity_id, $entity_type)->getThirdPartySetting('comment_limit', 'user_limit', FALSE);
+    $commentLimit = $this->getFieldConfig($entity_id, $entity_type);
+    return $commentLimit->getThirdPartySetting('comment_limit', 'user_limit', FALSE);
   }
 
   /**
@@ -225,7 +226,12 @@ class CommentLimit {
   private function getFieldConfig($entity_id, $entity_type) {
     $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
     $entity_bundle = $entity->bundle();
-    $field_config = FieldConfig::load($entity_type . '.' . $entity_bundle . '.comment');
+    $fields = $entity->getFieldDefinitions();
+    $field_names_as_keys = array_keys($fields);
+    $field_names = preg_grep('/comment/', $field_names_as_keys);
+    $field_name = array_values($field_names);
+    $field_config = FieldConfig::loadByName($entity_type, $entity_bundle, $field_name[0]);
+
     return $field_config;
   }
 
