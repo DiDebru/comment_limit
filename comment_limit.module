@@ -76,34 +76,29 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
  * Implements hook_form_alter().
  */
 function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_state) {
+  $comment = $form_state->getFormObject()->getEntity();
+  $entity_id = $comment->getCommentedEntityId();
+  $entity_type = $comment->getCommentedEntityTypeId();
+  $entity = Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
+  $bundle = $entity->bundle();
   $definitions = DataDefinition::create('boolean')
-    ->addConstraint('CommentFormConstraint', []);
+    ->addConstraint('CommentFormConstraint', [
+      'entity_id' => $entity_id,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle,
+    ]);
   $typed_data = Drupal::typedDataManager()->create($definitions);
   $violations = $typed_data->validate();
 
-  /*if ($comment_limit->getEntityLimit($entity_id, $entity_type)) {
-    if ($comment_limit->hasEntityLimitReached($entity_id, $entity_type)) {
-      $form = [];
-      $form['error_node'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'p',
-        '#value' => t('The comment limit for this @entity was reached', ['@entity' => $entity->bundle()]),
-      ];
-      $max_comment_entity_reached = TRUE;
-    }
+  if ($violations->count() > 0) {
+    $form = [];
+    $form['error_node'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => $violations->get(0),
+    ];
   }
-  if ($comment_limit->getUserLimit($entity_id, $entity_type)) {
-    if ($comment_limit->hasUserLimitReached($entity_id, $entity_type)) {
-      if ($max_comment_entity_reached == FALSE) {
-        $form = [];
-      }
-      $form['error_user'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'p',
-        '#value' => t('You have reached your comment limit for this @entity', ['@entity' => $entity->bundle()]),
-      ];
-    }
-  }*/
+
 }
 
 /**
@@ -184,25 +179,28 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
     $user_limit = $comment_limit->getUserLimit($entity_id, $entity_type);
     $entity_current = $comment_limit->getCurrentCommentsOnEntity($entity_id, $entity_type);
     $user_current = $comment_limit->getCurrentCommentCountForUser($entity_id, $entity_type);
-    if (!$comment_limit->hasEntityLimitReached($entity_id, $entity_type) || !$comment_limit->hasUserLimitReached($entity_id, $entity_type)) {
-      if ($display->getComponent('entity_limit') && $display->getComponent('user_limit')) {
+    if (!$comment_limit->hasEntityLimitReached($entity_id, $entity_type)) {
+      if ($display->getComponent('entity_limit')) {
         $build['entity_limit'] = [
-          '#type' => 'status_messages',
+          '#type' => 'item',
           '#markup' => '<b>' . t('This %entity_bundle is generally limited to a maximum of %maximum comments, %count have already been posted.', [
             '%entity_bundle' => $entity->bundle(),
             '%maximum' => $entity_limit,
             '%count' => $entity_current,
           ]) . '</b>',
         ];
-        $build['user_limit'] = [
-          '#type' => 'html_tag',
-          '#tag' => 'b',
-          '#markup' => '<b>' . t('You may post a maximum of %maximum comments on this %entity_bundle, having %count already posted', [
-            '%entity_bundle' => $entity->bundle(),
-            '%maximum' => $user_limit,
-            '%count' => $user_current,
-          ]) . '</b>' ,
-        ];
+      }
+      if (!$comment_limit->hasUserLimitReached($entity_id, $entity_type)) {
+        if ($display->getComponent('user_limit')) {
+          $build['user_limit'] = [
+            '#type' => 'item',
+            '#markup' => '<b>' . t('You may post a maximum of %maximum comments on this %entity_bundle, having %count already posted', [
+              '%entity_bundle' => $entity->bundle(),
+              '%maximum' => $user_limit,
+              '%count' => $user_current,
+            ]) . '</b>',
+          ];
+        }
       }
     }
   }
