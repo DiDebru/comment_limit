@@ -173,6 +173,7 @@ function comment_limit_entity_extra_field_info() {
  */
 function comment_limit_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
   if ($entity->hasField('comment')) {
+    $user = Drupal::currentUser();
     $comment_limit = Drupal::service('comment_limit.service');
     $entity_id = $entity->id();
     $entity_type = $entity->getEntityTypeId();
@@ -180,18 +181,18 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
     $user_limit = $comment_limit->getUserLimit($entity_id, $entity_type);
     $entity_current = $comment_limit->getCurrentCommentsOnEntity($entity_id, $entity_type);
     $user_current = $comment_limit->getCurrentCommentCountForUser($entity_id, $entity_type);
-    if (!$comment_limit->hasEntityLimitReached($entity_id, $entity_type)) {
-      if ($display->getComponent('entity_limit')) {
-        $build['entity_limit'] = [
-          '#type' => 'item',
-          '#markup' => '<b>' . t('This %entity_bundle is generally limited to a maximum of %maximum comments, %count have already been posted.', [
-            '%entity_bundle' => $entity->bundle(),
-            '%maximum' => $entity_limit,
-            '%count' => $entity_current,
-          ]) . '</b>',
-        ];
-      }
-      if (!$comment_limit->hasUserLimitReached($entity_id, $entity_type)) {
+    if (!$comment_limit->hasEntityLimitReached($entity_id, $entity_type) && $entity_limit > 0 && !$user->hasPermission('bypass comment limit')) {
+      if (!$comment_limit->hasUserLimitReached($entity_id, $entity_type) && $user_limit > 0) {
+        if ($display->getComponent('entity_limit')) {
+          $build['entity_limit'] = [
+            '#type' => 'item',
+            '#markup' => '<b>' . t('This %entity_bundle is generally limited to a maximum of %maximum comments, %count have already been posted.', [
+              '%entity_bundle' => $entity->bundle(),
+              '%maximum' => $entity_limit,
+              '%count' => $entity_current,
+            ]) . '</b>',
+          ];
+        }
         if ($display->getComponent('user_limit')) {
           $build['user_limit'] = [
             '#type' => 'item',
