@@ -29,6 +29,13 @@ class CommentLimit {
   protected $database;
 
   /**
+   * Message to show.
+   *
+   * @var string $message
+   */
+  protected $message;
+
+  /**
    * Constructor.
    */
   public function __construct(Connection $database, AccountProxyInterface $user) {
@@ -152,6 +159,59 @@ class CommentLimit {
   }
 
   /**
+   * Get all ContentEntityTypes.
+   *
+   * @return array entity types
+   *    Get an array of all ContentEntities.
+   */
+  public function getAllEntityTypes() {
+    // Get all entities.
+    $entity_types = \Drupal::entityTypeManager()->getDefinitions();
+    $content_entity_types = array_filter($entity_types, function ($entity_type) {
+      return $entity_type instanceof ContentEntityTypeInterface;
+    });
+    $content_entity_type_ids = array_keys($content_entity_types);
+    return $content_entity_type_ids;
+  }
+
+  /**
+   * Get the right error message.
+   *
+   * @param int $entity_id
+   *   The entity id.
+   * @param string $entity_type
+   *   The entity type.
+   * @param string $bundle
+   *   The bundle.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   Returns translateable markup with the correct error message.
+   */
+  public function getMessage($entity_id, $entity_type, $bundle) {
+    if (
+      $this->getUserLimit($entity_id, $entity_type) &&
+      $this->getEntityLimit($entity_id, $entity_type)
+    ) {
+      if (
+        $this->hasEntityLimitReached($entity_id, $entity_type) &&
+        $this->hasUserLimitReached($entity_id, $entity_type)
+      ) {
+        return $this->message = t('The comment limits for this @entity and your limit were reached', ['@entity' => $bundle]);
+      }
+    }
+    if ($this->getEntityLimit($entity_id, $entity_type)) {
+      if ($this->hasEntityLimitReached($entity_id, $entity_type)) {
+        return $this->message = t('The comment limit for this @entity was reached', ['@entity' => $bundle]);
+      }
+    }
+    if ($this->getUserLimit($entity_id, $entity_type)) {
+      if ($this->hasUserLimitReached($entity_id, $entity_type)) {
+        return $this->message = t('You have reached your comment limit for this @entity', ['@entity' => $bundle]);
+      }
+    }
+  }
+
+  /**
    * Get the FieldConfig of a comment field used in a specific entity bundle.
    *
    * @param int $entity_id
@@ -167,22 +227,6 @@ class CommentLimit {
     $entity_bundle = $entity->bundle();
     $field_config = FieldConfig::load($entity_type . '.' . $entity_bundle . '.comment');
     return $field_config;
-  }
-
-  /**
-   * Get all ContentEntityTypes.
-   *
-   * @return array entity types
-   *    Get an array of all ContentEntities.
-   */
-  public function getAllEntityTypes() {
-    // Get all entities.
-    $entity_types = \Drupal::entityTypeManager()->getDefinitions();
-    $content_entity_types = array_filter($entity_types, function ($entity_type) {
-      return $entity_type instanceof ContentEntityTypeInterface;
-    });
-    $content_entity_type_ids = array_keys($content_entity_types);
-    return $content_entity_type_ids;
   }
 
 }

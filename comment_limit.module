@@ -77,6 +77,7 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
  */
 function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_state) {
   $comment = $form_state->getFormObject()->getEntity();
+  $comment_limit = Drupal::service('comment_limit.service');
   $entity_id = $comment->getCommentedEntityId();
   $entity_type = $comment->getCommentedEntityTypeId();
   $entity = Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
@@ -95,7 +96,7 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
     $form['error_node'] = [
       '#type' => 'html_tag',
       '#tag' => 'p',
-      '#value' => $violations->get(0),
+      '#value' => $comment_limit->getMessage($entity_id, $entity_type, $bundle),
     ];
   }
 
