@@ -4,6 +4,8 @@ namespace Drupal\comment_limit;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\field\Entity\FieldConfig;
 
@@ -98,8 +100,8 @@ class CommentLimit {
    * @return mixed|null
    *   Returns the comment limit of the entity.
    */
-  public function getEntityLimit($entity_id, $entity_type) {
-    $commentLimit = $this->getFieldConfig($entity_id, $entity_type);
+  public function getFieldLimit($field_id) {
+    $commentLimit = $this->getFieldConfig($field_id);
     return $commentLimit->getThirdPartySetting('comment_limit', 'entity_limit', FALSE);
   }
 
@@ -130,8 +132,8 @@ class CommentLimit {
    * @return bool
    *    Returns TRUE or FALSE.
    */
-  public function hasUserLimitReached($entity_id, $entity_type) {
-    if ($this->getCurrentCommentCountForUser($entity_id, $entity_type) >= $this->getUserLimit($entity_id, $entity_type) && !$this->user->hasPermission('bypass comment limit')) {
+  public function hasUserLimitReached($entity_id, $entity_type, $field_id) {
+    if ($this->getCurrentCommentCountForUser($entity_id, $entity_type) >= $this->getUserLimit($field_id) && !$this->user->hasPermission('bypass comment limit')) {
       return TRUE;
     }
     else {
@@ -182,56 +184,70 @@ class CommentLimit {
    *   The entity id.
    * @param string $entity_type
    *   The entity type.
-   * @param string $bundle
-   *   The bundle.
+   * @param string $field_id
+   *   The field id.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
    *   Returns translateable markup with the correct error message.
    */
-  public function getMessage($entity_id, $entity_type, $bundle) {
+  public function getMessage($entity_id, $entity_type, $field_id) {
     if (
-      $this->getUserLimit($entity_id, $entity_type) &&
-      $this->getEntityLimit($entity_id, $entity_type)
+      $this->getUserLimit($field_id) &&
+      $this->getFieldLimit($field_id)
     ) {
       if (
-        $this->hasEntityLimitReached($entity_id, $entity_type) &&
-        $this->hasUserLimitReached($entity_id, $entity_type)
+        $this->hasFieldLimitReached($entity_id, $entity_type, $field_id) &&
+        $this->hasUserLimitReached($entity_id, $entity_type, $field_id)
       ) {
-        return $this->message = t('The comment limits for this @entity and your limit were reached', ['@entity' => $bundle]);
+        return $this->message = t('The comment limits for this @field and your limit were reached', ['@field' => $field_id]);
       }
     }
-    if ($this->getEntityLimit($entity_id, $entity_type)) {
-      if ($this->hasEntityLimitReached($entity_id, $entity_type)) {
-        return $this->message = t('The comment limit for this @entity was reached', ['@entity' => $bundle]);
+    if ($this->getFieldLimit($field_id)) {
+      if ($this->hasFieldLimitReached($entity_id, $entity_type, $field_id)) {
+        return $this->message = t('The comment limit for this @field was reached', ['@field' => $field_id]);
       }
     }
-    if ($this->getUserLimit($entity_id, $entity_type)) {
-      if ($this->hasUserLimitReached($entity_id, $entity_type)) {
-        return $this->message = t('You have reached your comment limit for this @entity', ['@entity' => $bundle]);
+    if ($this->getUserLimit($field_id)) {
+      if ($this->hasUserLimitReached($entity_id, $entity_type, $field_id)) {
+        return $this->message = t('You have reached your comment limit for this @field', ['@field' => $field_id]);
       }
     }
   }
 
   /**
+   * Get the field ids of  specific field type
+   *
+   * @param array $fields
+   *    An array of field definitions.
+   * @param $field_type
+   *    The field type to select.
+   *
+   * @return array $field_ids
+   *    Returns an array of field ids.
+   */
+  public function getFieldIdsOfType(array $fields, $field_type) {
+    $field_ids = [];
+
+    foreach ($fields as $field) {
+      if ($field->getType() == $field_type) {
+        $field_ids[$field->id()] = $field->id();
+      }
+    }
+
+    return $field_ids;
+  }
+
+  /**
    * Get the FieldConfig of a comment field used in a specific entity bundle.
    *
-   * @param int $entity_id
-   *   Current entity id.
-   * @param string $entity_type
-   *   Current entity type.
+   * @param string $field_id
+   *   Current field_id.
    *
    * @return \Drupal\Core\Entity\EntityInterface|null|static
    *    Returns the FieldConfig object.
    */
-  private function getFieldConfig($entity_id, $entity_type) {
-    $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
-    $entity_bundle = $entity->bundle();
-    $fields = $entity->getFieldDefinitions();
-    $field_names_as_keys = array_keys($fields);
-    $field_names = preg_grep('/comment/', $field_names_as_keys);
-    $field_name = array_values($field_names);
-    $field_config = FieldConfig::loadByName($entity_type, $entity_bundle, $field_name[0]);
-
+  private function getFieldConfig($field_id) {
+      $field_config = FieldConfig::load($field_id);
     return $field_config;
   }
 

@@ -18,6 +18,5 @@ class CommentFormConstraint extends Constraint {
 
   public $entityType;
 
-  public $bundle;
-
+  public $fieldId;
 }
