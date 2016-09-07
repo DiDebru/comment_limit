@@ -201,20 +201,20 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
             $build['field_limit'] = [
               '#type' => 'item',
               '#markup' => '<b>' . t('This %entity_bundle is generally limited to a maximum of %maximum comments, %count have already been posted.', [
-                  '%entity_bundle' => $entity->bundle(),
-                  '%maximum' => $field_limit,
-                  '%count' => $entity_current,
-                ]) . '</b>',
+                '%entity_bundle' => $entity->bundle(),
+                '%maximum' => $field_limit,
+                '%count' => $entity_current,
+              ]) . '</b>',
             ];
           }
           if ($display->getComponent('user_limit')) {
             $build['user_limit'] = [
               '#type' => 'item',
               '#markup' => '<b>' . t('You may post a maximum of %maximum comments on this %entity_bundle, having %count already posted', [
-                  '%entity_bundle' => $entity->bundle(),
-                  '%maximum' => $user_limit,
-                  '%count' => $user_current,
-                ]) . '</b>',
+                '%entity_bundle' => $entity->bundle(),
+                '%maximum' => $user_limit,
+                '%count' => $user_current,
+              ]) . '</b>',
             ];
           }
         }

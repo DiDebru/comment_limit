@@ -4,8 +4,6 @@ namespace Drupal\comment_limit;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\field\Entity\FieldConfig;
 
@@ -92,10 +90,8 @@ class CommentLimit {
   /**
    * Get the comment limit of the entity.
    *
-   * @param int $entity_id
-   *   The ID of the current entity.
-   * @param string $entity_type
-   *   Current entity type.
+   * @param string $field_id
+   *   Current field id.
    *
    * @return mixed|null
    *   Returns the comment limit of the entity.
@@ -108,10 +104,8 @@ class CommentLimit {
   /**
    * Get the comment limit for the user.
    *
-   * @param int $entity_id
-   *   The ID of the current entity.
-   * @param string $entity_type
-   *   Current entity type.
+   * @param string $field_id
+   *   Current field id.
    *
    * @return mixed|null
    *   Returns the comment limit for the user.
@@ -215,11 +209,11 @@ class CommentLimit {
   }
 
   /**
-   * Get the field ids of  specific field type
+   * Get the field ids of  specific field type.
    *
    * @param array $fields
    *    An array of field definitions.
-   * @param $field_type
+   * @param string $field_type
    *    The field type to select.
    *
    * @return array $field_ids
@@ -247,7 +241,7 @@ class CommentLimit {
    *    Returns the FieldConfig object.
    */
   private function getFieldConfig($field_id) {
-      $field_config = FieldConfig::load($field_id);
+    $field_config = FieldConfig::load($field_id);
     return $field_config;
   }
 
