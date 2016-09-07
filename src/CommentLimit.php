@@ -114,8 +114,8 @@ class CommentLimit {
    * @return mixed|null
    *   Returns the comment limit for the user.
    */
-  public function getUserLimit($entity_id, $entity_type) {
-    $commentLimit = $this->getFieldConfig($entity_id, $entity_type);
+  public function getUserLimit($field_id) {
+    $commentLimit = $this->getFieldConfig($field_id);
     return $commentLimit->getThirdPartySetting('comment_limit', 'user_limit', FALSE);
   }
 
@@ -150,8 +150,8 @@ class CommentLimit {
    * @return bool
    *    Returns TRUE or FALSE.
    */
-  public function hasEntityLimitReached($entity_id, $entity_type) {
-    if ($this->getCurrentCommentsOnEntity($entity_id, $entity_type) >= $this->getEntityLimit($entity_id, $entity_type) && !$this->user->hasPermission('bypass comment limit')) {
+  public function hasFieldLimitReached($entity_id, $entity_type, $field_id) {
+    if ($this->getCurrentCommentsOnEntity($entity_id, $entity_type) >= $this->getFieldLimit($field_id) && !$this->user->hasPermission('bypass comment limit')) {
       return TRUE;
     }
     else {

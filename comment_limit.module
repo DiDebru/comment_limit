@@ -21,7 +21,7 @@ function comment_limit_help($route_name, RouteMatchInterface $route_match) {
     case 'help.page.comment_limit':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Limits comments per node type') . '</p>';
+      $output .= '<p>' . t('Limits comments per field or user') . '</p>';
       return $output;
 
     default:
@@ -53,16 +53,16 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
       '#min' => '0',
       '#default_value' => $default_user,
     ];
-    if ($comment->getThirdPartySetting('comment_limit', 'entity_limit', FALSE) == NULL) {
+    if ($comment->getThirdPartySetting('comment_limit', 'field_limit', FALSE) == NULL) {
       $default_entity = '0';
     }
     else {
-      $default_entity = $comment->getThirdPartySetting('comment_limit', 'entity_limit', FALSE);
+      $default_entity = $comment->getThirdPartySetting('comment_limit', 'field_limit', FALSE);
     }
-    $form['comment_limit']['entity_limit'] = [
+    $form['comment_limit']['field_limit'] = [
       '#type' => 'number',
-      '#title' => 'Entity limit',
-      '#description' => t('The maximum number of comments on this entity, e.g. 10 or 0 for no limit'),
+      '#title' => 'Field limit',
+      '#description' => t('The maximum number of comments for this field, e.g. 10 or 0 for no limit'),
       '#weight' => 1,
       '#min' => '0',
       '#default_value' => $default_entity,
@@ -119,11 +119,11 @@ function comment_limit_form_field_edit_form_add_form_builder($entity_type, Field
   else {
     $comment->setThirdPartySetting('comment_limit', 'user_limit', $form_state->getValue('user_limit'));
   }
-  if ($form_state->getValue('entity_limit') == NULL) {
-    $form_state->setValue('entity_limit', '0');
+  if ($form_state->getValue('field_limit') == NULL) {
+    $form_state->setValue('field_limit', '0');
   }
   else {
-    $comment->setThirdPartySetting('comment_limit', 'entity_limit', $form_state->getValue('entity_limit'));
+    $comment->setThirdPartySetting('comment_limit', 'field_limit', $form_state->getValue('field_limit'));
   }
 }
 
