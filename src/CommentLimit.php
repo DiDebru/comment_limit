@@ -233,6 +233,52 @@ class CommentLimit {
   }
 
   /**
+   * Get the field names of  specific field type.
+   *
+   * @param array $fields
+   *    An array of field definitions.
+   * @param string $field_type
+   *    The field type to select.
+   *
+   * @return array $field_names
+   *    Returns an array of field names.
+   */
+  public function getFieldNamesOfType(array $fields, $field_type) {
+    $field_names = [];
+
+    foreach ($fields as $field) {
+      if ($field->getType() == $field_type) {
+        $field_names[$field->getName()] = $field->getName();
+      }
+    }
+
+    return $field_names;
+  }
+
+  /**
+   * Get the field labels of  specific field type.
+   *
+   * @param array $fields
+   *    An array of field definitions.
+   * @param string $field_type
+   *    The field type to select.
+   *
+   * @return array $field_labelss
+   *    Returns an array of field labels.
+   */
+  public function getFieldLabelsOfType(array $fields, $field_type) {
+    $field_labels = [];
+
+    foreach ($fields as $field) {
+      if ($field->getType() == $field_type) {
+        $field_labels[$field->Label()] = $field->getLabel();
+      }
+    }
+
+    return $field_labels;
+  }
+
+  /**
    * Get the FieldConfig of a comment field used in a specific entity bundle.
    *
    * @param string $field_id
