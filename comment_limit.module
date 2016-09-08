@@ -166,13 +166,13 @@ function comment_limit_entity_extra_field_info() {
           $fields[$type][$entity->bundle()] = [
             'display' => [
               'field_limit' => [
-                'label' => t('Field limit status.'),
+                'label' => t('Field limit status'),
                 'description' => t('Shows the limit status of the field'),
                 'weight' => 0,
                 'visible' => TRUE,
               ],
               'user_limit' => [
-                'label' => t('User limit status.'),
+                'label' => t('User limit status'),
                 'description' => t('Shows the limit status of the user'),
                 'weight' => 0,
                 'visible' => TRUE,
