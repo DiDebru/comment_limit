@@ -188,12 +188,13 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
       $comment_limit = Drupal::service('comment_limit.service');
       $entity_id = $entity->id();
       $entity_type = $entity->getEntityTypeId();
+      $field_name = $field->getName();
       $field_id = $field->id();
       $field_limit = $comment_limit->getFieldLimit($field_id);
       $user_limit = $comment_limit->getUserLimit($field_id);
-      $entity_current = $comment_limit->getCurrentCommentsOnEntity($entity_id, $entity_type);
+      $entity_current = $comment_limit->getCurrentCommentsOnField($entity_id, $entity_type, $field_name);
       $user_current = $comment_limit->getCurrentCommentCountForUser($entity_id, $entity_type);
-      if (!$comment_limit->hasFieldLimitReached($entity_id, $entity_type, $field_id) && $field_limit > 0 && !$user->hasPermission('bypass comment limit')) {
+      if (!$comment_limit->hasFieldLimitReached($entity_id, $entity_type, $field_name, $field_id) && $field_limit > 0 && !$user->hasPermission('bypass comment limit')) {
         if (!$comment_limit->hasUserLimitReached($entity_id, $entity_type, $field_id) && $user_limit > 0) {
           if ($display->getComponent('field_limit')) {
             $build['field_limit'] = [
