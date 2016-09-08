@@ -210,72 +210,26 @@ class CommentLimit {
   }
 
   /**
-   * Get the field ids of  specific field type.
+   * Get the fields of specific field type.
    *
    * @param array $fields
    *    An array of field definitions.
    * @param string $field_type
    *    The field type to select.
    *
-   * @return array $field_ids
-   *    Returns an array of field ids.
+   * @return array $field_of_types
+   *    Returns an array of fields.
    */
-  public function getFieldIdsOfType(array $fields, $field_type) {
-    $field_ids = [];
+  public function getFieldsOfType(array $fields, $field_type) {
+    $field_of_types = [];
 
     foreach ($fields as $field) {
       if ($field->getType() == $field_type) {
-        $field_ids[$field->id()] = $field->id();
+        $field_of_types[$field->id()] = $field;
       }
     }
 
-    return $field_ids;
-  }
-
-  /**
-   * Get the field names of  specific field type.
-   *
-   * @param array $fields
-   *    An array of field definitions.
-   * @param string $field_type
-   *    The field type to select.
-   *
-   * @return array $field_names
-   *    Returns an array of field names.
-   */
-  public function getFieldNamesOfType(array $fields, $field_type) {
-    $field_names = [];
-
-    foreach ($fields as $field) {
-      if ($field->getType() == $field_type) {
-        $field_names[$field->getName()] = $field->getName();
-      }
-    }
-
-    return $field_names;
-  }
-
-  /**
-   * Get the field labels of  specific field type.
-   *
-   * @param array $fields
-   *    An array of field definitions.
-   * @param string $field_type
-   *    The field type to select.
-   *
-   * @return array $field_labelss
-   *    Returns an array of field labels.
-   */
-  public function getFieldLabelsOfType(array $fields, $field_type) {
-    $field_labels = [];
-
-    foreach ($fields as $field) {
-      if ($field->getType() == $field_type) {
-        $field_labels[$field->Label()] = $field->getLabel();
-      }
-    }
-
-    return $field_labels;
+    return $field_of_types;
   }
 
   /**

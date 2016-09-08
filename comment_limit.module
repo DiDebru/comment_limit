@@ -82,29 +82,39 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
   $entity_type = $comment->getCommentedEntityTypeId();
   $entity = Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
   $fields = $entity->getFieldDefinitions();
-  $field_ids = $comment_limit->getFieldIdsOfType($fields, 'comment');
-  $field_names = $comment_limit->getFieldNamesOfType($fields, 'comment');
-  $field_labels = $comment_limit->getFieldLabelsOfType($fields, 'comment');
-  foreach ($field_ids as $field_id) {
-    foreach ($field_names as $field_name) {
-      foreach ($field_labels as $field_label) {
-        $definitions = DataDefinition::create('any')
-          ->addConstraint('CommentFormConstraint', [
-            'entityId' => $entity_id,
-            'entityType' => $entity_type,
-            'fieldId' => $field_id,
-            'fieldName' => $field_name,
-          ]);
-        $typed_data = Drupal::typedDataManager()->create($definitions);
-        $violations = $typed_data->validate();
-
-        if ($violations->count() > 0) {
-          drupal_set_message($comment_limit->getMessage($entity_id, $entity_type, $field_name, $field_id, $field_label));
-        }
+  $comment_fields = $comment_limit->getFieldsOfType($fields, 'comment');
+  foreach ($comment_fields as $field) {
+    $field_id = $field->id();
+    $field_name = $field->getName();
+    $field_label = $field->getLabel();
+    $definitions = DataDefinition::create('any')
+      ->addConstraint('CommentFormConstraint', [
+        'entityId' => $entity_id,
+        'entityType' => $entity_type,
+        'fieldId' => $field_id,
+        'fieldName' => $field_name,
+      ]);
+    $typed_data = Drupal::typedDataManager()->create($definitions);
+    $violations = $typed_data->validate();
+    $table_column = $field_name . '_status';
+    if ($violations->count() > 0) {
+      $status = Drupal::database()->select($entity_type . '__' . $field_name, 't')
+        ->fields('t', [$table_column])
+        ->condition('bundle', $entity->bundle())
+        ->condition('entity_id', $entity_id)
+        ->execute()
+        ->fetchAssoc();
+      if ($status[$table_column] = 2) {
+        Drupal::database()->update($entity_type . '__' . $field_name)
+          ->condition('bundle', $entity->bundle())
+          ->condition('entity_id', $entity_id)
+          ->fields([$field_name . '_status' => 1])
+          ->execute();
+        // @todo find a proper way to clear the cache.
+        drupal_set_message($comment_limit->getMessage($entity_id, $entity_type, $field_name, $field_id, $field_label));
       }
     }
   }
-
 }
 
 /**
