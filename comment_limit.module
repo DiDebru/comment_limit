@@ -83,27 +83,25 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
   $entity = Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
   $fields = $entity->getFieldDefinitions();
   $field_ids = $comment_limit->getFieldIdsOfType($fields, 'comment');
-  $validated = FALSE;
+  $field_names = $comment_limit->getFieldNamesOfType($fields, 'comment');
+  $field_labels = $comment_limit->getFieldLabelsOfType($fields, 'comment');
   foreach ($field_ids as $field_id) {
-    $definitions = DataDefinition::create('any')
-      ->addConstraint('CommentFormConstraint', [
-        'entityId' => $entity_id,
-        'entityType' => $entity_type,
-        'fieldId' => $field_id,
-      ]);
-    $typed_data = Drupal::typedDataManager()->create($definitions);
-    $violations = $typed_data->validate();
+    foreach ($field_names as $field_name) {
+      foreach ($field_labels as $field_label) {
+        $definitions = DataDefinition::create('any')
+          ->addConstraint('CommentFormConstraint', [
+            'entityId' => $entity_id,
+            'entityType' => $entity_type,
+            'fieldId' => $field_id,
+            'fieldName' => $field_name,
+          ]);
+        $typed_data = Drupal::typedDataManager()->create($definitions);
+        $violations = $typed_data->validate();
 
-    if ($violations->count() > 0) {
-      if ($validated == FALSE) {
-        $form = [];
+        if ($violations->count() > 0) {
+          drupal_set_message($comment_limit->getMessage($entity_id, $entity_type, $field_name, $field_id, $field_label));
+        }
       }
-      $form[$field_id] = [
-        '#type' => 'html_tag',
-        '#tag' => 'p',
-        '#value' => $comment_limit->getMessage($entity_id, $entity_type, $field_id),
-      ];
-      $validated = TRUE;
     }
   }
 
