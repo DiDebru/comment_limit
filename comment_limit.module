@@ -104,7 +104,7 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
         ->condition('entity_id', $entity_id)
         ->execute()
         ->fetchAssoc();
-      if ($status[$table_column] = 2) {
+      if ($status[$table_column] == 2) {
         Drupal::database()->update($entity_type . '__' . $field_name)
           ->condition('bundle', $entity->bundle())
           ->condition('entity_id', $entity_id)
