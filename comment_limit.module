@@ -192,43 +192,38 @@ function comment_limit_entity_extra_field_info() {
 function comment_limit_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
   $fields = $entity->getFieldDefinitions();
 
-  foreach ($fields as $field) {
+  foreach ($fields as $delta => $field) {
     if ($field->getType() == 'comment') {
-      $user = Drupal::currentUser();
       $comment_limit = Drupal::service('comment_limit.service');
       $entity_id = $entity->id();
       $entity_type = $entity->getEntityTypeId();
       $field_name = $field->getName();
       $field_id = $field->id();
+      $field_label = $field->getLabel();
       $field_limit = $comment_limit->getFieldLimit($field_id);
       $user_limit = $comment_limit->getUserLimit($field_id);
-      $entity_current = $comment_limit->getCurrentCommentsOnField($entity_id, $entity_type, $field_name);
+      $field_current = $comment_limit->getCurrentCommentsOnField($entity_id, $entity_type, $field_name);
       $user_current = $comment_limit->getCurrentCommentCountForUser($entity_id, $entity_type);
-      if (!$comment_limit->hasFieldLimitReached($entity_id, $entity_type, $field_name, $field_id) && $field_limit > 0 && !$user->hasPermission('bypass comment limit')) {
-        if (!$comment_limit->hasUserLimitReached($entity_id, $entity_type, $field_id) && $user_limit > 0) {
-          if ($display->getComponent('field_limit')) {
-            $build['field_limit'] = [
-              '#type' => 'item',
-              '#markup' => '<b>' . t('This %entity_bundle is generally limited to a maximum of %maximum comments, %count have already been posted.', [
-                '%entity_bundle' => $entity->bundle(),
-                '%maximum' => $field_limit,
-                '%count' => $entity_current,
-              ]) . '</b>',
-            ];
-          }
-          if ($display->getComponent('user_limit')) {
-            $build['user_limit'] = [
-              '#type' => 'item',
-              '#markup' => '<b>' . t('You may post a maximum of %maximum comments on this %entity_bundle, having %count already posted', [
-                '%entity_bundle' => $entity->bundle(),
-                '%maximum' => $user_limit,
-                '%count' => $user_current,
-              ]) . '</b>',
-            ];
-          }
-        }
+      if ($display->getComponent('field_limit')) {
+        $build[$delta . 'field_limit'] = [
+          '#type' => 'item',
+          '#markup' => '<b>' . t('The comment field "%field" is generally limited to a maximum of %maximum comments, %count have already been posted.', [
+            '%field' => $field_label,
+            '%maximum' => $field_limit,
+            '%count' => $field_current,
+          ]) . '</b>',
+        ];
+      }
+      if ($display->getComponent('user_limit')) {
+        $build[$delta . 'user_limit'] = [
+          '#type' => 'item',
+          '#markup' => '<b>' . t('You may post a maximum of %maximum comments for the comment field "%field", having %count already posted', [
+            '%field' => $field_label,
+            '%maximum' => $user_limit,
+            '%count' => $user_current,
+          ]) . '</b>',
+        ];
       }
     }
   }
-
 }
