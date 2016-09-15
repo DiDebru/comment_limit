@@ -1,5 +1,5 @@
 name: Comment limit
 type: module
-description: Limit comments per entity
+description: Limit comments per field and user
 core: 8.x
 package: Comment limit
