@@ -188,7 +188,7 @@ class CommentLimit {
    *   The field id.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
-   *   Returns translateable markup with the correct error message.
+   *   Returns translatable markup with the correct error message.
    */
   public function getMessage($entity_id, $entity_type, $field_name, $field_id, $field_label) {
     if (
