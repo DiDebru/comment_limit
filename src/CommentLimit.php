@@ -99,7 +99,7 @@ class CommentLimit {
    */
   public function getFieldLimit($field_id) {
     $commentLimit = $this->getFieldConfig($field_id);
-    return $commentLimit->getThirdPartySetting('comment_limit', 'field_limit', FALSE);
+    return $commentLimit->getThirdPartySetting('comment_limit', 'field_limit', 0);
   }
 
   /**
@@ -113,7 +113,7 @@ class CommentLimit {
    */
   public function getUserLimit($field_id) {
     $commentLimit = $this->getFieldConfig($field_id);
-    return $commentLimit->getThirdPartySetting('comment_limit', 'user_limit', FALSE);
+    return $commentLimit->getThirdPartySetting('comment_limit', 'user_limit', 0);
   }
 
   /**

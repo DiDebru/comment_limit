@@ -39,11 +39,11 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
       '#type' => 'fieldset',
       '#title' => 'Comment limit',
     ];
-    if ($comment->getThirdPartySetting('comment_limit', 'user_limit', FALSE) == NULL) {
+    if ($comment->getThirdPartySetting('comment_limit', 'user_limit', 0) == NULL) {
       $default_user = '0';
     }
     else {
-      $default_user = $comment->getThirdPartySetting('comment_limit', 'user_limit', FALSE);
+      $default_user = $comment->getThirdPartySetting('comment_limit', 'user_limit', 0);
     }
     $form['comment_limit']['user_limit'] = [
       '#type' => 'number',
@@ -53,11 +53,11 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
       '#min' => '0',
       '#default_value' => $default_user,
     ];
-    if ($comment->getThirdPartySetting('comment_limit', 'field_limit', FALSE) == NULL) {
+    if ($comment->getThirdPartySetting('comment_limit', 'field_limit', 0) == NULL) {
       $default_entity = '0';
     }
     else {
-      $default_entity = $comment->getThirdPartySetting('comment_limit', 'field_limit', FALSE);
+      $default_entity = $comment->getThirdPartySetting('comment_limit', 'field_limit', 0);
     }
     $form['comment_limit']['field_limit'] = [
       '#type' => 'number',
