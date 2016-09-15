@@ -37,6 +37,11 @@ class CommentLimit {
 
   /**
    * Constructor.
+   *
+   * @param Connection $database
+   *   The database connection.
+   * @param AccountProxyInterface $user
+   *   The current user.
    */
   public function __construct(Connection $database, AccountProxyInterface $user) {
     $this->database = $database;
