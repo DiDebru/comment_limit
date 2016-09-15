@@ -1,7 +1,7 @@
 {
   "name": "drupal/comment_limit",
   "type": "drupal-module",
-  "description": "Limits comments per node type",
+  "description": "Limits comments per field and user",
   "keywords": ["Drupal"],
   "license": "GPL-2.0+",
   "homepage": "https://www.drupal.org/project/comment_limit",
