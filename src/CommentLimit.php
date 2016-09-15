@@ -220,7 +220,7 @@ class CommentLimit {
    * @param string $field_id
    *   Current field_id.
    *
-   * @return \Drupal\Core\Entity\EntityInterface|null|static
+   * @return \Drupal\field\Entity\FieldConfig
    *    Returns the FieldConfig object.
    */
   private function getFieldConfig($field_id) {
