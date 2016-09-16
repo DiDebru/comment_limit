@@ -58,7 +58,6 @@ class CommentFormConstraintValidator extends ConstraintValidator implements Cont
    * {@inheritdoc}
    */
   public function validate($entity, Constraint $constraint) {
-
     if ($constraint->entityType && $constraint->entityId && $constraint->fieldId) {
       $entity_id = $constraint->entityId;
       $entity_type = $constraint->entityType;
@@ -67,15 +66,16 @@ class CommentFormConstraintValidator extends ConstraintValidator implements Cont
 
       if ($this->commentLimit->getFieldLimit($field_id) > 0) {
         if ($this->commentLimit->hasFieldLimitReached($entity_id, $entity_type, $field_name, $field_id)) {
-          return $this->context->addViolation(t('The comment limit was reached for @field', ['@field' => $field_id]));
+          return $this->context->addViolation($this->t('The comment limit was reached for @field', ['@field' => $field_id]));
         }
       }
       if ($this->commentLimit->getUserLimit($field_id) > 0) {
-        if ($this->commentLimit->hasUserLimitReached($entity_id, $entity_type, $field_id)) {
-          return $this->context->addViolation(t('The comment limit was reached for @id', ['@id' => $entity_id]));
+        if ($this->commentLimit->hasUserLimitReached($entity_id, $entity_type, $field_name, $field_id)) {
+          return $this->context->addViolation($this->t('The comment limit was reached for @id', ['@id' => $entity_id]));
         }
       }
     }
+
   }
 
 }
