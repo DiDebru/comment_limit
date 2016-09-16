@@ -62,42 +62,57 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function comment_limit_form_alter(&$form, FormStateInterface $form_state) {
-  if ($form['#id'] == 'comment-form') {
-    $comment = $form_state->getFormObject()->getEntity();
-    $comment_limit = Drupal::service('comment_limit.service');
-    $form_action = explode('/', $form['#action']);
-    $last_key = count($form_action) - 1;
-    $field_name = $form_action[$last_key];
-    $entity_id = $comment->getCommentedEntityId();
-    $entity_type = $comment->getCommentedEntityTypeId();
-    $entity = Drupal::entityTypeManager()
-      ->getStorage($entity_type)
-      ->load($entity_id);
-    $entity_bundle = $entity->bundle();
-    $field_config = FieldConfig::loadByName($entity_type, $entity_bundle, $field_name);
-    $field_id = $field_config->id();
-    $field_label = $field_config->getLabel();
-    $definitions = DataDefinition::create('any')
-      ->addConstraint('CommentFormConstraint', [
-        'entityId' => $entity_id,
-        'entityType' => $entity_type,
-        'fieldId' => $field_id,
-        'fieldName' => $field_name,
-      ]);
-    $typed_data = Drupal::typedDataManager()->create($definitions);
-    $violations = $typed_data->validate();
+function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $comment_limit = Drupal::service('comment_limit.service');
+  $comment = $form_state->getFormObject()->getEntity();
 
-    if ($violations->count() > 0) {
-      $form = [];
-      $form[$field_name] = [
-        '#type' => 'html_tag',
-        '#tag' => 'b',
-        '#value' => $comment_limit->getMessage($entity_id, $entity_type, $field_name, $field_id, $field_label),
-      ];
+  $form_action_parts = explode('/', $form['#action']);
+  $field_name = $form_action_parts[count($form_action_parts) - 1];
+
+  $entity = Drupal::entityTypeManager()
+    ->getStorage($comment->getCommentedEntityTypeId())
+    ->load($comment->getCommentedEntityId());
+
+  $field_config = FieldConfig::loadByName(
+    $comment->getCommentedEntityTypeId(),
+    $entity->bundle(),
+    $field_name
+  );
+  $field_id = $field_config->id();
+  $field_label = $field_config->getLabel();
+
+  $definitions = DataDefinition::create('any')
+    ->addConstraint('CommentFormConstraint', [
+      'entityId' => $comment->getCommentedEntityId(),
+      'entityType' => $comment->getCommentedEntityTypeId(),
+      'fieldId' => $field_id,
+      'fieldName' => $field_name,
+    ]);
+  $typed_data = Drupal::typedDataManager()->create($definitions);
+  $violations = $typed_data->validate();
+  if ($violations->count() > 0) {
+    // Check access of the form elements.
+    $access = \Drupal::currentUser()->hasPermission('bypass comment limit');
+    foreach ($form as $key => $value) {
+      if (strpos($key, '#') === FALSE) {
+        $form[$key]['#access'] = $access;
+      }
     }
+
+    // Add information about the limit.
+    $form['comment_limit'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'em',
+      '#value' => $comment_limit->getMessage(
+        $comment->getCommentedEntityId(),
+        $comment->getCommentedEntityTypeId(),
+        $field_name,
+        $field_id,
+        $field_label
+      ),
+    ];
   }
 }
 
@@ -185,12 +200,12 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
       $comment_limit = Drupal::service('comment_limit.service');
       $field_limit = $comment_limit->getFieldLimit($field->id());
       $user_limit = $comment_limit->getUserLimit($field->id());
-      $field_current = $comment_limit->getCurrentCommentsOnField(
+      $field_current_count = $comment_limit->getCurrentCommentsOnField(
         $entity->id(),
         $entity->getEntityTypeId(),
         $field->getName()
       );
-      $user_current = $comment_limit->getCurrentCommentCountForUser(
+      $user_current_count = $comment_limit->getCurrentCommentCountForUser(
         $entity->id(),
         $entity->getEntityTypeId()
       );
@@ -199,24 +214,25 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
         $build['comment_limit_field_limit'] = [
           '#type' => 'item',
           '#weight' => $component['weight'],
-          '#markup' => '<b>' . t('The comment field "%field" is generally limited to a maximum of %maximum comments, %count have already been posted.', [
+          '#markup' => '<em>' . t('The comment field "%field" is generally limited to a maximum of %maximum comments, %count have already been posted.', [
             '%field' => $field->getLabel(),
             '%maximum' => $field_limit,
-            '%count' => $field_current,
-          ]) . '</b>',
+            '%count' => $field_current_count,
+          ]) . '</em>',
         ];
       }
       if ($component = $display->getComponent('user_limit')) {
         $build['comment_limit_user_limit'] = [
           '#type' => 'item',
           '#weight' => $component['weight'],
-          '#markup' => '<b>' . t('You may post a maximum of %maximum comments for the comment field "%field", having %count already posted', [
+          '#markup' => '<em>' . t('You may post a maximum of %maximum comments for the comment field "%field", having %count already posted', [
             '%field' => $field->getLabel(),
             '%maximum' => $user_limit,
-            '%count' => $user_current,
-          ]) . '</b>',
+            '%count' => $user_current_count,
+          ]) . '</em>',
         ];
       }
+
     }
   }
 }
