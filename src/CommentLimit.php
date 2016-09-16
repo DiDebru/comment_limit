@@ -208,17 +208,17 @@ class CommentLimit {
         $this->hasFieldLimitReached($entity_id, $entity_type, $field_name, $field_id) &&
         $this->hasUserLimitReached($entity_id, $entity_type, $field_name, $field_id)
       ) {
-        return $this->message = t('The comment limit for the comment field "@field" and your limit were reached', ['@field' => $field_label]);
+        return $this->message = $this->t('The comment limit for the comment field "@field" and your limit were reached', ['@field' => $field_label]);
       }
     }
     if ($this->getFieldLimit($field_id)) {
       if ($this->hasFieldLimitReached($entity_id, $entity_type, $field_name, $field_id)) {
-        return $this->message = t('The comment limit for the comment field "@field" was reached', ['@field' => $field_label]);
+        return $this->message = $this->t('The comment limit for the comment field "@field" was reached', ['@field' => $field_label]);
       }
     }
     if ($this->getUserLimit($field_id)) {
       if ($this->hasUserLimitReached($entity_id, $entity_type, $field_name, $field_id)) {
-        return $this->message = t('You have reached your comment limit for the comment field "@field"', ['@field' => $field_label]);
+        return $this->message = $this->t('You have reached your comment limit for the comment field "@field"', ['@field' => $field_label]);
       }
     }
   }
