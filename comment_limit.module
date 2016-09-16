@@ -76,7 +76,7 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
  * Implements hook_form_alter().
  */
 function comment_limit_form_alter(&$form, FormStateInterface $form_state) {
-  if ($form['#id'] == 'comment-form') {
+  if ($form['#form_id'] == 'comment_comment_form') {
     $comment = $form_state->getFormObject()->getEntity();
     $comment_limit = Drupal::service('comment_limit.service');
     $form_action = explode('/', $form['#action']);
@@ -90,7 +90,7 @@ function comment_limit_form_alter(&$form, FormStateInterface $form_state) {
     $entity_bundle = $entity->bundle();
     $field_config = FieldConfig::loadByName($entity_type, $entity_bundle, $field_name);
     $field_id = $field_config->id();
-    $field_label = $field_config->getLabel();    
+    $field_label = $field_config->getLabel();
     $definitions = DataDefinition::create('any')
       ->addConstraint('CommentFormConstraint', [
         'entityId' => $entity_id,
