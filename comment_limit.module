@@ -141,36 +141,39 @@ function comment_limit_form_field_edit_form_add_form_builder($entity_type, Field
  * Implements hook_entity_extra_field_info().
  */
 function comment_limit_entity_extra_field_info() {
-  $fields = [];
-  $entities = [];
-  $entity_ids = [];
+  $extra = [];
+
+  /** @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundles_info */
+  $bundles_info = Drupal::service('entity_type.bundle.info');
+  $bundles = $bundles_info->getAllBundleInfo();
+
+  /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager */
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+
+  /** @var \Drupal\comment_limit\CommentLimit $comment_limit */
   $comment_limit = Drupal::service('comment_limit.service');
-  $types = $comment_limit->getAllEntityTypes();
-  foreach ($types as $type) {
-    $entities[$type] = Drupal::entityTypeManager()
-      ->getStorage($type)
-      ->loadMultiple();
-    $entity_ids[$type] = array_keys($entities[$type]);
-    foreach ($entity_ids[$type] as $id) {
-      $entity = Drupal::entityTypeManager()
-        ->getStorage($type)
-        ->load($id);
-      $entity_fields = $entity->getFieldDefinitions();
-      foreach ($entity_fields as $entity_field) {
-        if ($entity_field->getType() == 'comment') {
-          $fields[$type][$entity->bundle()] = [
+  $entity_types = $comment_limit->getAllEntityTypes();
+
+  foreach ($entity_types as $entity_type_id) {
+    foreach ($bundles[$entity_type_id] as $bundle_name => $bundle) {
+      // Get all the bundles field definitions.
+      $field_configs = $entity_field_manager->getFieldDefinitions($entity_type_id, $bundle_name);
+      foreach ($field_configs as $field_name => $field_config) {
+        // Check if we have a comment field.
+        if ($field_config->getType() === 'comment') {
+          $extra[$entity_type_id][$bundle_name] = [
             'display' => [
               'field_limit' => [
-                'label' => t('Field limit status'),
+                'label' => $this->t('Field limit status'),
                 'description' => t('Shows the limit status of the field'),
                 'weight' => 0,
-                'visible' => TRUE,
+                'visible' => FALSE,
               ],
               'user_limit' => [
                 'label' => t('User limit status'),
-                'description' => t('Shows the limit status of the user'),
+                'description' => $this->t('Shows the limit status of the user'),
                 'weight' => 0,
-                'visible' => TRUE,
+                'visible' => FALSE,
               ],
             ],
           ];
@@ -178,7 +181,7 @@ function comment_limit_entity_extra_field_info() {
       }
     }
   }
-  return $fields;
+  return $extra;
 }
 
 /**
