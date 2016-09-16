@@ -207,7 +207,8 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
       );
       $user_current_count = $comment_limit->getCurrentCommentCountForUser(
         $entity->id(),
-        $entity->getEntityTypeId()
+        $entity->getEntityTypeId(),
+        $field->getName()
       );
 
       if ($component = $display->getComponent('field_limit')) {
