@@ -57,7 +57,6 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
       '#min' => '0',
       '#default_value' => $default_entity,
     ];
-
     $form['#entity_builders'][] = 'comment_limit_form_field_edit_form_add_form_builder';
   }
 }
@@ -182,31 +181,37 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
 
   foreach ($fields as $delta => $field) {
     if ($field->getType() == 'comment') {
+
       $comment_limit = Drupal::service('comment_limit.service');
-      $entity_id = $entity->id();
-      $entity_type = $entity->getEntityTypeId();
-      $field_name = $field->getName();
-      $field_id = $field->id();
-      $field_label = $field->getLabel();
-      $field_limit = $comment_limit->getFieldLimit($field_id);
-      $user_limit = $comment_limit->getUserLimit($field_id);
-      $field_current = $comment_limit->getCurrentCommentsOnField($entity_id, $entity_type, $field_name);
-      $user_current = $comment_limit->getCurrentCommentCountForUser($entity_id, $entity_type);
-      if ($display->getComponent('field_limit')) {
-        $build[$delta . 'field_limit'] = [
+      $field_limit = $comment_limit->getFieldLimit($field->id());
+      $user_limit = $comment_limit->getUserLimit($field->id());
+      $field_current = $comment_limit->getCurrentCommentsOnField(
+        $entity->id(),
+        $entity->getEntityTypeId(),
+        $field->getName()
+      );
+      $user_current = $comment_limit->getCurrentCommentCountForUser(
+        $entity->id(),
+        $entity->getEntityTypeId()
+      );
+
+      if ($component = $display->getComponent('field_limit')) {
+        $build['comment_limit_field_limit'] = [
           '#type' => 'item',
+          '#weight' => $component['weight'],
           '#markup' => '<b>' . t('The comment field "%field" is generally limited to a maximum of %maximum comments, %count have already been posted.', [
-            '%field' => $field_label,
+            '%field' => $field->getLabel(),
             '%maximum' => $field_limit,
             '%count' => $field_current,
           ]) . '</b>',
         ];
       }
-      if ($display->getComponent('user_limit')) {
-        $build[$delta . 'user_limit'] = [
+      if ($component = $display->getComponent('user_limit')) {
+        $build['comment_limit_user_limit'] = [
           '#type' => 'item',
+          '#weight' => $component['weight'],
           '#markup' => '<b>' . t('You may post a maximum of %maximum comments for the comment field "%field", having %count already posted', [
-            '%field' => $field_label,
+            '%field' => $field->getLabel(),
             '%maximum' => $user_limit,
             '%count' => $user_current,
           ]) . '</b>',
