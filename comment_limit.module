@@ -20,8 +20,8 @@ function comment_limit_help($route_name, RouteMatchInterface $route_match) {
     // Main module help for the comment_limit module.
     case 'help.page.comment_limit':
       $output = '';
-      $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Limits comments per field or user') . '</p>';
+      $output .= '<h3>' . $this->t('About') . '</h3>';
+      $output .= '<p>' . $this->t('Limits comments per field or user') . '</p>';
       return $output;
 
     default:
@@ -48,7 +48,7 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
     $form['comment_limit']['user_limit'] = [
       '#type' => 'number',
       '#title' => 'User limit',
-      '#description' => t('The maximum number of comments per user on this entity, e.g. 2 or 0 for no limit'),
+      '#description' => $this->t('The maximum number of comments per user on this entity, e.g. 2 or 0 for no limit'),
       '#weight' => 1,
       '#min' => '0',
       '#default_value' => $default_user,
@@ -62,7 +62,7 @@ function comment_limit_form_field_config_edit_form_alter(&$form, FormStateInterf
     $form['comment_limit']['field_limit'] = [
       '#type' => 'number',
       '#title' => 'Field limit',
-      '#description' => t('The maximum number of comments for this field, e.g. 10 or 0 for no limit'),
+      '#description' => $this->t('The maximum number of comments for this field, e.g. 10 or 0 for no limit'),
       '#weight' => 1,
       '#min' => '0',
       '#default_value' => $default_entity,
@@ -164,14 +164,14 @@ function comment_limit_entity_extra_field_info() {
           $extra[$entity_type_id][$bundle_name] = [
             'display' => [
               'field_limit' => [
-                'label' => t('Field limit status'),
-                'description' => t('Shows the limit status of the field'),
+                'label' => $this->t('Field limit status'),
+                'description' => $this->t('Shows the limit status of the field'),
                 'weight' => 0,
                 'visible' => FALSE,
               ],
               'user_limit' => [
-                'label' => t('User limit status'),
-                'description' => t('Shows the limit status of the user'),
+                'label' => $this->t('User limit status'),
+                'description' => $this->t('Shows the limit status of the user'),
                 'weight' => 0,
                 'visible' => FALSE,
               ],
@@ -205,7 +205,7 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
       if ($display->getComponent('field_limit')) {
         $build[$delta . 'field_limit'] = [
           '#type' => 'item',
-          '#markup' => '<b>' . t('The comment field "%field" is generally limited to a maximum of %maximum comments, %count have already been posted.', [
+          '#markup' => '<b>' . $this->t('The comment field "%field" is generally limited to a maximum of %maximum comments, %count have already been posted.', [
             '%field' => $field_label,
             '%maximum' => $field_limit,
             '%count' => $field_current,
@@ -215,7 +215,7 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
       if ($display->getComponent('user_limit')) {
         $build[$delta . 'user_limit'] = [
           '#type' => 'item',
-          '#markup' => '<b>' . t('You may post a maximum of %maximum comments for the comment field "%field", having %count already posted', [
+          '#markup' => '<b>' . $this->t('You may post a maximum of %maximum comments for the comment field "%field", having %count already posted', [
             '%field' => $field_label,
             '%maximum' => $user_limit,
             '%count' => $user_current,
