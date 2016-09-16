@@ -5,6 +5,7 @@ namespace Drupal\comment_limit;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\field\Entity\FieldConfig;
 
 /**
@@ -13,6 +14,8 @@ use Drupal\field\Entity\FieldConfig;
  * @package Drupal\comment_limit
  */
 class CommentLimit {
+
+  use StringTranslationTrait;
 
   /**
    * The user object.
