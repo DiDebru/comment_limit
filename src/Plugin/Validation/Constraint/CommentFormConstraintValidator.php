@@ -58,7 +58,6 @@ class CommentFormConstraintValidator extends ConstraintValidator implements Cont
    * {@inheritdoc}
    */
   public function validate($entity, Constraint $constraint) {
-
     if ($constraint->entityType && $constraint->entityId && $constraint->fieldId) {
       $entity_id = $constraint->entityId;
       $entity_type = $constraint->entityType;

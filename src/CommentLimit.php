@@ -55,7 +55,7 @@ class CommentLimit {
    *   The ID of the current entity.
    * @param string $entity_type
    *   Current entity type.
-   * @param string $field_name.
+   * @param string $field_name
    *    The current comment field.
    *
    * @return int
@@ -81,7 +81,7 @@ class CommentLimit {
    *   The ID of the current entity.
    * @param string $entity_type
    *   Current entity type.
-   * @param string $field_name.
+   * @param string $field_name
    *   Current field name.
    *
    * @return int
@@ -133,7 +133,7 @@ class CommentLimit {
    *   The ID of the current entity.
    * @param string $entity_type
    *   Current entity type.
-   * @param string $field_name.
+   * @param string $field_name
    *   Current field name.
    * @param string $field_id
    *   Current field id.
