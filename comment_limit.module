@@ -198,7 +198,7 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
       $field_limit = $comment_limit->getFieldLimit($field_id);
       $user_limit = $comment_limit->getUserLimit($field_id);
       $field_current = $comment_limit->getCurrentCommentsOnField($entity_id, $entity_type, $field_name);
-      $user_current = $comment_limit->getCurrentCommentCountForUser($entity_id, $entity_type);
+      $user_current = $comment_limit->getCurrentCommentCountForUser($entity_id, $entity_type, $field_name);
       if ($display->getComponent('field_limit')) {
         $build[$delta . 'field_limit'] = [
           '#type' => 'item',
