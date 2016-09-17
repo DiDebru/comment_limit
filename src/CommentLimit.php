@@ -160,6 +160,10 @@ class CommentLimit {
    *    The ID of the current entity.
    * @param string $entity_type
    *   Current entity type.
+   * @param string $field_name
+   *   The field name.
+   * @param string $field_id
+   *   The field id.
    *
    * @return bool
    *    Returns TRUE or FALSE.
@@ -196,14 +200,21 @@ class CommentLimit {
    *   The entity id.
    * @param string $entity_type
    *   The entity type.
+   * @param string $field_name
+   *   The field name.
    * @param string $field_id
    *   The field id.
+   * @param string $field_label
+   *   The field label.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
    *   Returns translatable markup with the correct error message.
    */
   public function getMessage($entity_id, $entity_type, $field_name, $field_id, $field_label) {
-    if (
+    if ($this->user->hasPermission('bypass comment limit')) {
+      return '';
+    }
+    elseif (
       $this->getUserLimit($field_id) &&
       $this->getFieldLimit($field_id)
     ) {
@@ -214,12 +225,12 @@ class CommentLimit {
         return $this->message = $this->t('The comment limit for the comment field "@field" and your limit were reached', ['@field' => $field_label]);
       }
     }
-    if ($this->getFieldLimit($field_id)) {
+    elseif ($this->getFieldLimit($field_id)) {
       if ($this->hasFieldLimitReached($entity_id, $entity_type, $field_name, $field_id)) {
         return $this->message = $this->t('The comment limit for the comment field "@field" was reached', ['@field' => $field_label]);
       }
     }
-    if ($this->getUserLimit($field_id)) {
+    elseif ($this->getUserLimit($field_id)) {
       if ($this->hasUserLimitReached($entity_id, $entity_type, $field_name, $field_id)) {
         return $this->message = $this->t('You have reached your comment limit for the comment field "@field"', ['@field' => $field_label]);
       }
