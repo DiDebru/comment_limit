@@ -165,21 +165,17 @@ function comment_limit_entity_extra_field_info() {
       foreach ($field_configs as $field_name => $field_config) {
         // Check if we have a comment field.
         if ($field_config->getType() === 'comment') {
-          $extra[$entity_type_id][$bundle_name] = [
-            'display' => [
-              'field_limit' => [
-                'label' => t('Field limit status'),
-                'description' => t('Shows the limit status of the field'),
-                'weight' => 0,
-                'visible' => FALSE,
-              ],
-              'user_limit' => [
-                'label' => t('User limit status'),
-                'description' => t('Shows the limit status of the user'),
-                'weight' => 0,
-                'visible' => FALSE,
-              ],
-            ],
+          $extra[$entity_type_id][$bundle_name]['display']['field_limit_' . $field_name] = [
+            'label' => t('Field limit status for @field_name', ['@field_name' => $field_name]),
+            'description' => t('Shows the limit status of the field'),
+            'weight' => 0,
+            'visible' => FALSE,
+          ];
+          $extra[$entity_type_id][$bundle_name]['display']['user_limit_' . $field_name] = [
+            'label' => t('User limit status for @field_name', ['@field_name' => $field_name]),
+            'description' => t('Shows the limit status of the user'),
+            'weight' => 0,
+            'visible' => FALSE,
           ];
         }
       }
@@ -212,7 +208,7 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
       );
 
       if ($component = $display->getComponent('field_limit')) {
-        $build['comment_limit_field_limit'] = [
+        $build['field_limit_' . $field->getName()] = [
           '#type' => 'item',
           '#weight' => $component['weight'],
           '#markup' => '<em>' . t('The comment field "%field" is generally limited to a maximum of %maximum comments, %count have already been posted.', [
@@ -223,7 +219,7 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
         ];
       }
       if ($component = $display->getComponent('user_limit')) {
-        $build['comment_limit_user_limit'] = [
+        $build['user_limit_' . $field->getName()] = [
           '#type' => 'item',
           '#weight' => $component['weight'],
           '#markup' => '<em>' . t('You may post a maximum of %maximum comments for the comment field "%field", having %count already posted', [
