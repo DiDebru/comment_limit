@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\ExecutionContextInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Class CommentFormConstraintValidator.
@@ -15,6 +16,8 @@ use Symfony\Component\Validator\ExecutionContextInterface;
  * @package Drupal\comment_limit\Plugin\Validation\Constraint
  */
 class CommentFormConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
+
+  use StringTranslationTrait;
 
   /**
    * Validator 2.5 and upwards compatible execution context.
