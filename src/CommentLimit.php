@@ -145,7 +145,7 @@ class CommentLimit {
    *    Returns TRUE or FALSE.
    */
   public function hasUserLimitReached($entity_id, $entity_type, $field_name, $field_id) {
-    if ($this->getCurrentCommentCountForUser($entity_id, $entity_type, $field_name) >= $this->getUserLimit($field_id) && !$this->user->hasPermission('bypass comment limit')) {
+    if ($this->getCurrentCommentCountForUser($entity_id, $entity_type, $field_name) >= $this->getUserLimit($field_id)) {
       return TRUE;
     }
     else {
@@ -169,7 +169,7 @@ class CommentLimit {
    *    Returns TRUE or FALSE.
    */
   public function hasFieldLimitReached($entity_id, $entity_type, $field_name, $field_id) {
-    if ($this->getCurrentCommentsOnField($entity_id, $entity_type, $field_name) >= $this->getFieldLimit($field_id) && !$this->user->hasPermission('bypass comment limit')) {
+    if ($this->getCurrentCommentsOnField($entity_id, $entity_type, $field_name) >= $this->getFieldLimit($field_id)) {
       return TRUE;
     }
     else {

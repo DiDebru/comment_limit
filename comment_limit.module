@@ -207,7 +207,7 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
         $field->getName()
       );
 
-      if ($component = $display->getComponent('field_limit')) {
+      if ($component = $display->getComponent('field_limit_' . $field->getName())) {
         $build['field_limit_' . $field->getName()] = [
           '#type' => 'item',
           '#weight' => $component['weight'],
@@ -218,7 +218,7 @@ function comment_limit_entity_view(array &$build, EntityInterface $entity, Entit
           ]) . '</em>',
         ];
       }
-      if ($component = $display->getComponent('user_limit')) {
+      if ($component = $display->getComponent('user_limit_' . $field->getName())) {
         $build['user_limit_' . $field->getName()] = [
           '#type' => 'item',
           '#weight' => $component['weight'],
