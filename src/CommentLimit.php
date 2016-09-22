@@ -215,27 +215,23 @@ class CommentLimit {
       return '';
     }
     elseif (
-      $this->getUserLimit($field_id) &&
-      $this->getFieldLimit($field_id)
-    ) {
-      if (
+        $this->getUserLimit($field_id) > 0 &&
+        $this->getFieldLimit($field_id) > 0 &&
         $this->hasFieldLimitReached($entity_id, $entity_type, $field_name, $field_id) &&
         $this->hasUserLimitReached($entity_id, $entity_type, $field_name, $field_id)
       ) {
         return $this->message = $this->t('The comment limit for the comment field "@field" and your limit were reached', ['@field' => $field_label]);
       }
+    elseif ($this->hasFieldLimitReached($entity_id, $entity_type, $field_name, $field_id) &&
+      $this->getFieldLimit($field_id) > 0) {
+      return $this->message = $this->t('The comment limit for the comment field "@field" was reached', ['@field' => $field_label]);
     }
-    elseif ($this->getFieldLimit($field_id)) {
-      if ($this->hasFieldLimitReached($entity_id, $entity_type, $field_name, $field_id)) {
-        return $this->message = $this->t('The comment limit for the comment field "@field" was reached', ['@field' => $field_label]);
-      }
-    }
-    elseif ($this->getUserLimit($field_id)) {
-      if ($this->hasUserLimitReached($entity_id, $entity_type, $field_name, $field_id)) {
-        return $this->message = $this->t('You have reached your comment limit for the comment field "@field"', ['@field' => $field_label]);
-      }
+    elseif ($this->hasUserLimitReached($entity_id, $entity_type, $field_name, $field_id) &&
+      $this->getUserLimit($field_id) > 0) {
+      return $this->message = $this->t('You have reached your comment limit for the comment field "@field"', ['@field' => $field_label]);
     }
   }
+
 
   /**
    * Get the FieldConfig of a comment field used in a specific entity bundle.

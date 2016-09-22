@@ -102,7 +102,7 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
     }
 
     // Add information about the limit.
-    $form['comment_limit'] = [
+    $form['comment_limit_' . $field_name] = [
       '#type' => 'html_tag',
       '#tag' => 'em',
       '#value' => $comment_limit->getMessage(
@@ -112,6 +112,7 @@ function comment_limit_form_comment_form_alter(&$form, FormStateInterface $form_
         $field_id,
         $field_label
       ),
+      '#access' => Drupal::currentUser()->hasPermission('post comments'),
     ];
   }
 }
